@@ -59,15 +59,18 @@ INC_DIR = include
 EXE = ChiaGPUPlotter
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/cuda_kernel.o $(OBJ_DIR)/chacha8.o 
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/util.o $(OBJ_DIR)/calculate_bucket.o $(OBJ_DIR)/phase1.o \
+		$(OBJ_DIR)/disk.o 
+
+KERNEL_OBJS = $(OBJ_DIR)/cuda_kernel.o $(OBJ_DIR)/chacha8.o 
 
 ##########################################################
 
 ## Compile ##
 
 # Link c++ and CUDA compiled object files to target executable:
-$(EXE) : $(OBJS)
-	$(CC) $(CC_FLAGS) $(OBJS) -o $@ $(CUDA_LINK_LIBS) 
+$(EXE) : $(OBJS) $(KERNEL_OBJS)
+	$(CC) $(CC_FLAGS) $(OBJS) $(KERNEL_OBJS) -o $@ $(CUDA_LINK_LIBS) 
 
 # Compile main .cpp file to object files:
 $(OBJ_DIR)/%.o : %.cpp
