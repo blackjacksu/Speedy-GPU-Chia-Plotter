@@ -50,7 +50,7 @@ F1Calculator::F1Calculator(uint8_t k, const uint8_t* orig_key)
     enc_key[0] = 1;
     memcpy(enc_key + 1, orig_key, 31);
     // Setup ChaCha8 context with zero-filled IV
-    // chacha8_keysetup(&this->enc_ctx_, enc_key, 256, NULL);
+    chacha8_keysetup(&this->enc_ctx_, enc_key, 256, NULL);
 }
 
 // F1(x) values for x in range [first_x, first_x + n) are placed in res[].
@@ -64,6 +64,13 @@ void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
     uint32_t start_bit = first_x * k_ % kF1BlockSizeBits;
     uint8_t x_shift = k_ - kExtraBits;
     assert(n <= (1U << kBatchSizes));
+
+    int size = 10;
+    uint64_t pos[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    uint32_t n_block[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    uint8_t **c;
+
+    get_chacha8_key( pos, n_block, c, size);
     // chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
     for (uint64_t x = first_x; x < first_x + n; x++) {
         uint64_t y = SliceInt64FromBytes(buf_, start_bit, k_);

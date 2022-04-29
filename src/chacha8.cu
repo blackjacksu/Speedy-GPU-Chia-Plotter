@@ -5,7 +5,6 @@
 // Include associated header file.
 #include "../include/chacha8.cuh"
 
-#include <iostream>
 
 #define U32TO32_LITTLE(v) (v)
 #define U8TO32_LITTLE(p) (*(const uint32_t *)(p))
@@ -27,13 +26,32 @@
     c = PLUS(c, d);              \
     b = ROTATE(XOR(b, c), 7)
 
-void get_chacha8_key()
+void get_chacha8_key(/* struct chacha8_ctx **_x, */ uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
 {
     // 
-    std::cout << "Helloe" << std::endl;
+    std::cout << "Size of uint64_t" + sizeof(uint64_t) << std::endl;
+    std::cout << "Size of * uint64_t" + sizeof(_pos) << std::endl;
+    std::cout << "Size of uint32_t" + sizeof(uint32_t) << std::endl;
+    std::cout << "Size of * uint32_t" + sizeof(_n_blocks) << std::endl;
+
+    uint64_t *pos = _pos;
+    uint32_t *n_blocks = _n_blocks;
+
+    cudaMalloc((void**) &pos, array_size * sizeof(uint64_t));
+
+    cudaMemcpy(pos, _pos, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
+    
+
+    // Calculate blocksize and gridsize.
+    dim3 blockSize(512, 1, 1);
+    dim3 gridSize(512 / array_size + 1, 1);
+
+    // chacha8_get_keystream_cuda<<<gridSize, blockSize>>>();
+
 }
 
-__global__ void chacha8_keysetup(struct chacha8_ctx *x, const uint8_t *k, uint32_t kbits, const uint8_t *iv)
+// This is host code
+void chacha8_keysetup(struct chacha8_ctx *x, const uint8_t *k, uint32_t kbits, const uint8_t *iv)
 {
     const char *constants;
     static const char sigma[17] = "expand 32-byte k";
@@ -66,7 +84,8 @@ __global__ void chacha8_keysetup(struct chacha8_ctx *x, const uint8_t *k, uint32
     }
 }
 
-__global__ void chacha8_get_keystream(const struct chacha8_ctx *x, uint64_t pos, uint32_t n_blocks, uint8_t *c)
+// This is the GPU device code
+__global__ void chacha8_get_keystream_cuda(const struct chacha8_ctx *x, uint64_t pos, uint32_t n_blocks, uint8_t *c)
 {
     uint32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
     uint32_t j0, j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12, j13, j14, j15;
@@ -158,4 +177,9 @@ __global__ void chacha8_get_keystream(const struct chacha8_ctx *x, uint64_t pos,
 
         c += 64;
     }
+}
+
+__global__ void add()
+{
+
 }
