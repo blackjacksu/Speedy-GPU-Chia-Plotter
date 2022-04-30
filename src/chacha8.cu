@@ -81,7 +81,10 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
     j14 = x[idx].input[14];
     j15 = x[idx].input[15];
 
+    printf("x is clear\n");
+
     while (n_blocks[idx]--) {
+        printf("n block is clear, n_blocks[idx]: %d\n", n_blocks[idx]);
         x0 = j0;
         x1 = j1;
         x2 = j2;
@@ -149,6 +152,8 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
         U32TO8_LITTLE(c[idx] + 60, x15);
 
         c[idx] += 64;
+
+        printf("c is clear");
     }
 }
 
