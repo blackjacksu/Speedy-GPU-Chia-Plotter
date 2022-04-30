@@ -143,7 +143,7 @@ __global__ void chacha8_get_keystream_cuda(const struct chacha8_ctx *x, uint64_t
 
 
 
-void get_chacha8_key(struct chacha8_ctx **_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
+void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
 {
     // 
     std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
@@ -160,7 +160,7 @@ void get_chacha8_key(struct chacha8_ctx **_x, uint64_t *_pos, uint32_t *_n_block
 
     uint64_t *pos = _pos;
     uint32_t *n_blocks = _n_blocks;
-    struct chacha8_ctx **x = _x;
+    struct chacha8_ctx *x = _x;
     int thread_block = array_size;
 
     // Has to handle error if memory allocation failed

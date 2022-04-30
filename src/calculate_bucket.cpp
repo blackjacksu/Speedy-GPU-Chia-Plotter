@@ -65,11 +65,14 @@ void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
     uint8_t x_shift = k_ - kExtraBits;
     assert(n <= (1U << kBatchSizes));
 
-    int size = 10;
-    uint64_t pos[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    uint32_t n_block[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    int size = 1;
+    uint64_t pos[1];
+    uint32_t n_block[1];
     uint8_t **c;
-    struct chacha8_ctx **x;
+    struct chacha8_ctx x[1];
+    pos[0] = start;
+    n_block[0] = num_blocks;
+    memcpy(x, &this->enc_ctx_, sizeof(struct chacha8_ctx));
 
     get_chacha8_key(x, pos, n_block, c, size);
     // chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);

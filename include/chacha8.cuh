@@ -8,7 +8,7 @@ struct chacha8_ctx {
     uint32_t input[16];
 };
 
-void get_chacha8_key(struct chacha8_ctx **_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size);
+void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size);
 
 #ifdef __cplusplus
 extern "C" {
