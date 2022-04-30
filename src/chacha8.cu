@@ -174,10 +174,10 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
-    struct chacha8_ctx *x = _x;
-    uint64_t *pos = _pos;
-    uint32_t *n_blocks = _n_blocks;
-    uint8_t **c = _c;
+    struct chacha8_ctx *x;
+    uint64_t *pos;
+    uint32_t *n_blocks;
+    uint8_t **c;
     int thread_block = array_size;
 
     // Has to handle error if memory allocation failed
@@ -232,7 +232,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
-
+    std::cout << "Malloc and Memcpy done" << std::endl;
 
     // Calculate blocksize and gridsize.
     // dim3 blockSize(512, 1, 1);
