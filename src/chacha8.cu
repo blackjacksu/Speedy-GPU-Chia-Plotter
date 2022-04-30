@@ -198,14 +198,14 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         std::cout << "cudaMalloc fail at x error: " << error << std::endl; 
         return;
     }
-
-    error = cudaMalloc((void**) &c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0]);
+    std::cout << "happen error: " << std::endl; 
+    error = cudaMalloc((void**) &c, SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0]);
     if (error)
     {
         std::cout << "cudaMalloc fail at c error: " << error << std::endl; 
         return;
     }
-
+    std::cout << "happen after error: " << std::endl; 
     error = cudaMemcpy(pos, _pos, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
