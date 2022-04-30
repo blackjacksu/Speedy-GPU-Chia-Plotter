@@ -199,7 +199,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
     std::cout << "happen error: " << std::endl; 
-    error = cudaMalloc((void**) &c, SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0]);
+    error = cudaMalloc((void**) &c, SIZE_OF_OUTPUT_PER_BLOCK * _n_blocks[0]);
     if (error)
     {
         std::cout << "cudaMalloc fail at c error: " << error << std::endl; 
