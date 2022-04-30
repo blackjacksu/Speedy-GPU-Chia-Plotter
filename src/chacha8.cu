@@ -194,7 +194,7 @@ void get_chacha8_key(struct chacha8_ctx **_x, uint64_t *_pos, uint32_t *_n_block
         return;
     }
 
-    error = cudaMemcpy(n_blocks, _n_blocks, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
+    error = cudaMemcpy(n_blocks, _n_blocks, array_size * sizeof(uint32_t), cudaMemcpyHostToDevice);
     if (error)
     {
         std::cout << "cudaMemcpy fail at n_blocks error: " << error << std::endl; 
