@@ -236,17 +236,17 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
-    std::cout << "Malloc and Memcpy done" << std::endl;
-    // std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
-    std::cout << "n_blocks: " << n_blocks[0] << std::endl;
-    std::cout << "pos: " << pos[0] << std::endl;
+    // std::cout << "Malloc and Memcpy done" << std::endl;
+    // // std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
+    // std::cout << "n_blocks: " << n_blocks[0] << std::endl;
+    // std::cout << "pos: " << pos[0] << std::endl;
 
 
-    // Calculate blocksize and gridsize.
-    // dim3 blockSize(512, 1, 1);
-    // dim3 gridSize(512 / array_size + 1, 1);
+    // // Calculate blocksize and gridsize.
+    // // dim3 blockSize(512, 1, 1);
+    // // dim3 gridSize(512 / array_size + 1, 1);
 
-    chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks/*, c*/);
+    // chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks/*, c*/);
 
     // // Copy result to output
     // error = cudaMemcpy(_c[0], c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyDeviceToHost);
