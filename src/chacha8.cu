@@ -152,7 +152,7 @@ void get_chacha8_key(struct chacha8_ctx **_x, uint64_t *_pos, uint32_t *_n_block
     std::cout << "Size of * uint32_t:" << sizeof(_n_blocks) << std::endl;
     std::cout << "Size of struct chacha8_ctx:" << sizeof(struct chacha8_ctx) << std::endl;
 
-    if (array_size < MAX_ARRAY_SIZE)
+    if (array_size > MAX_ARRAY_SIZE)
     {
         std::cout << "Array size out of bound" << std::endl;
         return;
