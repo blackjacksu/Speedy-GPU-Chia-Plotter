@@ -12,7 +12,7 @@ CUDA_ROOT_DIR=/sw/eb/sw/CUDA/11.4.1
 # CC compiler options:
 CC=g++
 CC_FLAGS=-std=c++17 -Wall
-CC_LIBS=
+CC_LIBS= -lpthread
 
 ##########################################################
 
@@ -70,7 +70,7 @@ KERNEL_OBJS = $(OBJ_DIR)/cuda_kernel.o $(OBJ_DIR)/chacha8.o
 
 # Link c++ and CUDA compiled object files to target executable:
 $(EXE) : $(OBJS) $(KERNEL_OBJS)
-	$(CC) $(CC_FLAGS) $(OBJS) $(KERNEL_OBJS) -o $@ $(CUDA_LINK_LIBS) 
+	$(CC) $(CC_FLAGS) $(OBJS) $(KERNEL_OBJS) -o $@ $(CUDA_LINK_LIBS) $(CC_LIBS)
 
 # Compile main .cpp file to object files:
 $(OBJ_DIR)/%.o : %.cpp

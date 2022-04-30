@@ -61,7 +61,9 @@ class F1Calculator {
 public:
     F1Calculator();
 
-    F1Calculator(uint8_t k, const uint8_t* orig_key);
+    F1Calculator(bool _gpu_boost);
+
+    F1Calculator(uint8_t k, const uint8_t* orig_key, bool _gpu_boost);
 
     // F1(x) values for x in range [first_x, first_x + n) are placed in res[].
     // n must not be more than 1 << kBatchSizes.
@@ -79,6 +81,8 @@ private:
     struct chacha8_ctx enc_ctx_{};
 
     uint8_t *buf_{};
+
+    bool gpu_boost;
 };
 
 #endif

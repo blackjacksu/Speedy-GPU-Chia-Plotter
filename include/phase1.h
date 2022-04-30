@@ -41,6 +41,7 @@
 // #include "sort_manager.hpp"
 // #include "threading.hpp"
 #include "util.h"
+#include "disk.h"
 // #include "progress.hpp"
 
 struct GlobalData {
@@ -57,6 +58,6 @@ struct GlobalData {
 };
 
 
-void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm);
+void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, std::string file_path, std::string start_time);
 
 #endif

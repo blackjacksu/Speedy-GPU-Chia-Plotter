@@ -38,9 +38,17 @@ F1Calculator::F1Calculator()
 {
     // Default constructor
     std::cout << "Default F1Calculator" << std::endl;
+    gpu_boost = false;
 }
 
-F1Calculator::F1Calculator(uint8_t k, const uint8_t* orig_key)
+F1Calculator::F1Calculator(bool _gpu_boost)
+{
+    // Default constructor
+    std::cout << "Default F1Calculator" << std::endl;
+    gpu_boost = _gpu_boost;
+}
+
+F1Calculator::F1Calculator(uint8_t k, const uint8_t* orig_key, bool _gpu_boost)
 {
     uint8_t enc_key[32];
     size_t buf_blocks = cdiv(k << kBatchSizes, kF1BlockSizeBits) + 1;
@@ -51,6 +59,8 @@ F1Calculator::F1Calculator(uint8_t k, const uint8_t* orig_key)
     memcpy(enc_key + 1, orig_key, 31);
     // Setup ChaCha8 context with zero-filled IV
     chacha8_keysetup(&this->enc_ctx_, enc_key, 256, NULL);
+
+    gpu_boost = _gpu_boost;
 }
 
 // F1(x) values for x in range [first_x, first_x + n) are placed in res[].
@@ -63,19 +73,27 @@ void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
     uint64_t num_blocks = end - start;
     uint32_t start_bit = first_x * k_ % kF1BlockSizeBits;
     uint8_t x_shift = k_ - kExtraBits;
-    assert(n <= (1U << kBatchSizes));
-
     int size = 1;
     uint64_t pos[1];
     uint32_t n_block[1];
     uint8_t **c;
     struct chacha8_ctx x[1];
-    pos[0] = start;
-    n_block[0] = num_blocks;
-    memcpy(x, &this->enc_ctx_, sizeof(struct chacha8_ctx));
+    assert(n <= (1U << kBatchSizes));
 
-    get_chacha8_key(x, pos, n_block, c, size);
-    // chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
+    if (gpu_boost)
+    {
+        pos[0] = start;
+        n_block[0] = num_blocks;
+        memcpy(x, &this->enc_ctx_, sizeof(struct chacha8_ctx));
+
+        get_chacha8_key(x, pos, n_block, c, size);
+    }
+    else
+    {
+        chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
+    }
+
+
     for (uint64_t x = first_x; x < first_x + n; x++) {
         uint64_t y = SliceInt64FromBytes(buf_, start_bit, k_);
         res[x - first_x] = (y << kExtraBits) | (x >> x_shift);

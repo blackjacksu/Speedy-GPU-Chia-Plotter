@@ -32,6 +32,19 @@ void Timer::PrintElapsed(std::string name) {
     std::cout << name << " " << (wall_clock_ms / 1000.0)  << " seconds. CPU (" << cpu_ratio << "%)" << std::endl;
 }
 
+std::string Timer::GetCurrentTimeString()
+{   
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer,80,"%m%d%Y_%H%M%S",timeinfo);
+    return buffer;
+}
+
 
 uint64_t SliceInt64FromBytes(
     const uint8_t *bytes,

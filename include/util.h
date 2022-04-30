@@ -43,6 +43,8 @@ class Timer {
 
     void PrintElapsed(std::string name);
 
+    std::string GetCurrentTimeString();
+
  private:
   std::chrono::time_point<std::chrono::steady_clock> wall_clock_time_start_;
   clock_t cpu_time_start_;

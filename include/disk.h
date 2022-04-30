@@ -98,7 +98,7 @@ void disk_log(fs::path const& filename, op_t const op, uint64_t offset, uint64_t
 #endif
 
 struct FileDisk {
-    explicit FileDisk(const std::string &filename);
+    explicit FileDisk(/*const std::string &filepath,*/ const std::string &filename);
 
     void Open(uint8_t flags = 0);
 
@@ -116,6 +116,8 @@ struct FileDisk {
     void Write(uint64_t begin, const uint8_t *memcache, uint64_t length);
 
     std::string GetFileName();
+    
+    std::string GetPathName();
 
     uint64_t GetWriteMax();
 
@@ -129,6 +131,7 @@ private:
     bool bReading = true;
 
     std::string filename_;
+    std::string filepath_;
     FILE *f_ = nullptr;
 
     static const uint8_t writeFlag = 0b01;

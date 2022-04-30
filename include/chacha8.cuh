@@ -8,18 +8,19 @@ struct chacha8_ctx {
     uint32_t input[16];
 };
 
-void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size);
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void chacha8_keysetup(struct chacha8_ctx *x, const uint8_t *k, uint32_t kbits, const uint8_t *iv);
-// void chacha8_get_keystream(
-//     const struct chacha8_ctx *x,
-//     uint64_t pos,
-//     uint32_t n_blocks,
-//     uint8_t *c);
+void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size);
+void chacha8_get_keystream(
+    const struct chacha8_ctx *x,
+    uint64_t pos,
+    uint32_t n_blocks,
+    uint8_t *c);
 
 #ifdef __cplusplus
 }

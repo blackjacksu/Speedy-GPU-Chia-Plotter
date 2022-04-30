@@ -15,9 +15,11 @@
 
 #include "../include/disk.h"
 
-FileDisk::FileDisk(const std::string &filename)
+FileDisk::FileDisk(/*const std::string &filepath,*/ const std::string &filename)
 {
-    filename_ = filename;
+    // filepath_ = filepath;
+    filename_ = /*filepath +*/ filename;
+    std::cout << "f name: " << filename_ << std::endl;
     Open(writeFlag);
 }
 
@@ -149,7 +151,11 @@ void FileDisk::Write(uint64_t begin, const uint8_t *memcache, uint64_t length)
         }
     } while (amtwritten != length);
 }
+
 std::string FileDisk::GetFileName() { return filename_; }
+
+std::string FileDisk::GetPathName() { return filepath_; }
+
 uint64_t FileDisk::GetWriteMax()
 { return writeMax; }
 // void FileDisk::Truncate(uint64_t new_size)
