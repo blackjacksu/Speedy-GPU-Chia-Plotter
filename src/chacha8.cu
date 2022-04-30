@@ -183,7 +183,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     // Has to handle error if memory allocation failed
     cudaError_t error;
 
-
+    std::cout << "Array size: " << array_size << std::endl;
     // Allocate space for device
     error = cudaMalloc((void**) &pos, array_size * sizeof(uint64_t));
     if (error)
@@ -237,7 +237,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     }
 
     std::cout << "Malloc and Memcpy done" << std::endl;
-    std::cout << "x: " << x->input[0] << x->input[1] << std::endl;
+    std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
     std::cout << "n_blocks: " << n_blocks[0] << std::endl;
     std::cout << "pos: " << pos[0] << std::endl;
 
