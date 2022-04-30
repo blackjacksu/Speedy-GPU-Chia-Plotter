@@ -48,6 +48,10 @@ int main(int argc, char *argv[]) {
     F1Calculator f1;
     
     f1.say_hi();
+    uint64_t first_x = 0;
+    uint64_t n = 0;
+    uint64_t *res;
+    f1.CalculateBuckets( first_x, n, res);
 
     FileDisk f("plot_disk");
 

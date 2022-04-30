@@ -69,8 +69,9 @@ void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
     uint64_t pos[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     uint32_t n_block[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     uint8_t **c;
+    struct chacha8_ctx **x;
 
-    get_chacha8_key( pos, n_block, c, size);
+    get_chacha8_key(x, pos, n_block, c, size);
     // chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
     for (uint64_t x = first_x; x < first_x + n; x++) {
         uint64_t y = SliceInt64FromBytes(buf_, start_bit, k_);
