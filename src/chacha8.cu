@@ -30,8 +30,10 @@
 // This is the GPU device code
 __global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 {
+    printf("blockDim x:%d, y:%d, z:%d\n", blockDim.x, blockDim.y, blockDim.z);
+    printf("threadIdx x:%d, y:%d, z:%d\n", threadIdx.x, threadIdx.y, threadIdx.z);
+    printf("gridDim x:%d, y:%d, z:%d\n", gridDim.x, gridDim.y, gridDim.z);
 
-    printf("Funny story, could only use printf in device code, no cout><\n");
     block_dim[0] = blockDim.x;
     block_dim[1] = blockDim.y;
     block_dim[2] = blockDim.z;
