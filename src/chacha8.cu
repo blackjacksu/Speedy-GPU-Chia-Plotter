@@ -7,6 +7,12 @@
 
 #define MAX_ARRAY_SIZE 256
 
+// There is a multiply relation between the size of c (output) and n_blocks
+// n_blocks = 1, sizeof(c) = uint8_t * 64 * 1
+// n_blocks = 2, sizeof(c) = uint8_t * 64 * 2
+// n_blocks = 3, sizeof(c) = uint8_t * 64 * 3
+#define SIZE_OF_OUTPUT_PER_BLOCK 64
+
 #define U32TO32_LITTLE(v) (v)
 #define U8TO32_LITTLE(p) (*(const uint32_t *)(p))
 #define U32TO8_LITTLE(p, v) (((uint32_t *)(p))[0] = U32TO32_LITTLE(v))
@@ -49,30 +55,33 @@ __global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 
 
 // This is the GPU device code
-__global__ void chacha8_get_keystream_cuda(const struct chacha8_ctx *x, uint64_t pos, uint32_t n_blocks, uint8_t *c)
+__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint32_t *n_blocks, uint8_t **c)
 {
+    int idx = threadIdx.x;
+    printf("[chacha8_get_keystream_cuda] i = %d\n", idx);
+
     uint32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
     uint32_t j0, j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12, j13, j14, j15;
     int i;
 
-    j0 = x->input[0];
-    j1 = x->input[1];
-    j2 = x->input[2];
-    j3 = x->input[3];
-    j4 = x->input[4];
-    j5 = x->input[5];
-    j6 = x->input[6];
-    j7 = x->input[7];
-    j8 = x->input[8];
-    j9 = x->input[9];
-    j10 = x->input[10];
-    j11 = x->input[11];
-    j12 = pos;
-    j13 = pos >> 32;
-    j14 = x->input[14];
-    j15 = x->input[15];
+    j0 = x[idx].input[0];
+    j1 = x[idx].input[1];
+    j2 = x[idx].input[2];
+    j3 = x[idx].input[3];
+    j4 = x[idx].input[4];
+    j5 = x[idx].input[5];
+    j6 = x[idx].input[6];
+    j7 = x[idx].input[7];
+    j8 = x[idx].input[8];
+    j9 = x[idx].input[9];
+    j10 = x[idx].input[10];
+    j11 = x[idx].input[11];
+    j12 = pos[idx];
+    j13 = pos[idx] >> 32;
+    j14 = x[idx].input[14];
+    j15 = x[idx].input[15];
 
-    while (n_blocks--) {
+    while (n_blocks[idx]--) {
         x0 = j0;
         x1 = j1;
         x2 = j2;
@@ -122,24 +131,24 @@ __global__ void chacha8_get_keystream_cuda(const struct chacha8_ctx *x, uint64_t
             /* stopping at 2^70 bytes per nonce is user's responsibility */
         }
 
-        U32TO8_LITTLE(c + 0, x0);
-        U32TO8_LITTLE(c + 4, x1);
-        U32TO8_LITTLE(c + 8, x2);
-        U32TO8_LITTLE(c + 12, x3);
-        U32TO8_LITTLE(c + 16, x4);
-        U32TO8_LITTLE(c + 20, x5);
-        U32TO8_LITTLE(c + 24, x6);
-        U32TO8_LITTLE(c + 28, x7);
-        U32TO8_LITTLE(c + 32, x8);
-        U32TO8_LITTLE(c + 36, x9);
-        U32TO8_LITTLE(c + 40, x10);
-        U32TO8_LITTLE(c + 44, x11);
-        U32TO8_LITTLE(c + 48, x12);
-        U32TO8_LITTLE(c + 52, x13);
-        U32TO8_LITTLE(c + 56, x14);
-        U32TO8_LITTLE(c + 60, x15);
+        U32TO8_LITTLE(c[idx] + 0, x0);
+        U32TO8_LITTLE(c[idx] + 4, x1);
+        U32TO8_LITTLE(c[idx] + 8, x2);
+        U32TO8_LITTLE(c[idx] + 12, x3);
+        U32TO8_LITTLE(c[idx] + 16, x4);
+        U32TO8_LITTLE(c[idx] + 20, x5);
+        U32TO8_LITTLE(c[idx] + 24, x6);
+        U32TO8_LITTLE(c[idx] + 28, x7);
+        U32TO8_LITTLE(c[idx] + 32, x8);
+        U32TO8_LITTLE(c[idx] + 36, x9);
+        U32TO8_LITTLE(c[idx] + 40, x10);
+        U32TO8_LITTLE(c[idx] + 44, x11);
+        U32TO8_LITTLE(c[idx] + 48, x12);
+        U32TO8_LITTLE(c[idx] + 52, x13);
+        U32TO8_LITTLE(c[idx] + 56, x14);
+        U32TO8_LITTLE(c[idx] + 60, x15);
 
-        c += 64;
+        c[idx] += 64;
     }
 }
 
@@ -160,9 +169,10 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
+    struct chacha8_ctx *x = _x;
     uint64_t *pos = _pos;
     uint32_t *n_blocks = _n_blocks;
-    struct chacha8_ctx *x = _x;
+    uint8_t **c = _c;
     int thread_block = array_size;
 
     // Has to handle error if memory allocation failed
@@ -210,11 +220,18 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
+    error = cudaMemcpy(c[0], _c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyHostToDevice);
+    if (error)
+    {
+        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+        return;
+    }
+
     // Calculate blocksize and gridsize.
     // dim3 blockSize(512, 1, 1);
     // dim3 gridSize(512 / array_size + 1, 1);
 
-    // chacha8_get_keystream_cuda<<<gridSize, blockSize>>>();
+    chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks, c);
     int block_dim[3] = {1, 2, 3};
     int thread_id[3] = {1, 2, 3};
     int grid_dim[3] = {1, 2, 3};
