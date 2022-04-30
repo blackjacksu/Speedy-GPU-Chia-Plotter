@@ -5,6 +5,7 @@
 // Include associated header file.
 #include "../include/chacha8.cuh"
 
+#define MAX_ARRAY_SIZE 256
 
 #define U32TO32_LITTLE(v) (v)
 #define U8TO32_LITTLE(p) (*(const uint32_t *)(p))
@@ -26,63 +27,24 @@
     c = PLUS(c, d);              \
     b = ROTATE(XOR(b, c), 7)
 
-void get_chacha8_key(/* struct chacha8_ctx **_x, */ uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
+// This is the GPU device code
+__global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 {
-    // 
-    std::cout << "Size of uint64_t" + sizeof(uint64_t) << std::endl;
-    std::cout << "Size of * uint64_t" + sizeof(_pos) << std::endl;
-    std::cout << "Size of uint32_t" + sizeof(uint32_t) << std::endl;
-    std::cout << "Size of * uint32_t" + sizeof(_n_blocks) << std::endl;
 
-    uint64_t *pos = _pos;
-    uint32_t *n_blocks = _n_blocks;
+    printf("Funny story, could only use printf in device code, no cout><\n");
+    block_dim[0] = blockDim.x;
+    block_dim[1] = blockDim.y;
+    block_dim[2] = blockDim.z;
 
-    cudaMalloc((void**) &pos, array_size * sizeof(uint64_t));
+    thread_id[0] = threadIdx.x;
+    thread_id[1] = threadIdx.y;
+    thread_id[2] = threadIdx.z;
 
-    cudaMemcpy(pos, _pos, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
-    
-
-    // Calculate blocksize and gridsize.
-    dim3 blockSize(512, 1, 1);
-    dim3 gridSize(512 / array_size + 1, 1);
-
-    // chacha8_get_keystream_cuda<<<gridSize, blockSize>>>();
-
+    grid_dim[0] = gridDim.x;
+    grid_dim[1] = gridDim.y;
+    grid_dim[2] = gridDim.z;
 }
 
-// This is host code
-void chacha8_keysetup(struct chacha8_ctx *x, const uint8_t *k, uint32_t kbits, const uint8_t *iv)
-{
-    const char *constants;
-    static const char sigma[17] = "expand 32-byte k";
-    static const char tau[17] = "expand 16-byte k";
-
-    x->input[4] = U8TO32_LITTLE(k + 0);
-    x->input[5] = U8TO32_LITTLE(k + 4);
-    x->input[6] = U8TO32_LITTLE(k + 8);
-    x->input[7] = U8TO32_LITTLE(k + 12);
-    if (kbits == 256) { /* recommended */
-        k += 16;
-        constants = sigma;
-    } else { /* kbits == 128 */
-        constants = tau;
-    }
-    x->input[8] = U8TO32_LITTLE(k + 0);
-    x->input[9] = U8TO32_LITTLE(k + 4);
-    x->input[10] = U8TO32_LITTLE(k + 8);
-    x->input[11] = U8TO32_LITTLE(k + 12);
-    x->input[0] = U8TO32_LITTLE(constants + 0);
-    x->input[1] = U8TO32_LITTLE(constants + 4);
-    x->input[2] = U8TO32_LITTLE(constants + 8);
-    x->input[3] = U8TO32_LITTLE(constants + 12);
-    if (iv) {
-        x->input[14] = U8TO32_LITTLE(iv + 0);
-        x->input[15] = U8TO32_LITTLE(iv + 4);
-    } else {
-        x->input[14] = 0;
-        x->input[15] = 0;
-    }
-}
 
 // This is the GPU device code
 __global__ void chacha8_get_keystream_cuda(const struct chacha8_ctx *x, uint64_t pos, uint32_t n_blocks, uint8_t *c)
@@ -179,7 +141,121 @@ __global__ void chacha8_get_keystream_cuda(const struct chacha8_ctx *x, uint64_t
     }
 }
 
-__global__ void add()
-{
 
+
+void get_chacha8_key(struct chacha8_ctx **_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
+{
+    // 
+    std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
+    std::cout << "Size of * uint64_t:" << sizeof(_pos) << std::endl;
+    std::cout << "Size of uint32_t:" << sizeof(uint32_t) << std::endl;
+    std::cout << "Size of * uint32_t:" << sizeof(_n_blocks) << std::endl;
+    std::cout << "Size of struct chacha8_ctx:" << sizeof(struct chacha8_ctx) << std::endl;
+
+    if (array_size > MAX_ARRAY_SIZE)
+    {
+        std::cout << "Array size out of bound" << std::endl;
+        return;
+    }
+
+    uint64_t *pos = _pos;
+    uint32_t *n_blocks = _n_blocks;
+    struct chacha8_ctx **x = _x;
+    int thread_block = array_size;
+
+    // Has to handle error if memory allocation failed
+    cudaError_t error;
+
+    error = cudaMalloc((void**) &pos, array_size * sizeof(uint64_t));
+    if (error)
+    {
+        std::cout << "cudaMalloc fail at pos error: " << error << std::endl; 
+        return;
+    }
+
+    error = cudaMalloc((void**) &n_blocks, array_size * sizeof(uint32_t));
+    if (error)
+    {
+        std::cout << "cudaMalloc fail at n_blocks error: " << error << std::endl; 
+        return;
+    }
+
+    error = cudaMalloc((void**) &x, array_size * sizeof(struct chacha8_ctx));
+    if (error)
+    {
+        std::cout << "cudaMalloc fail at x error: " << error << std::endl; 
+        return;
+    }
+
+    error = cudaMemcpy(pos, _pos, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
+    if (error)
+    {
+        std::cout << "cudaMemcpy fail at pos error: " << error << std::endl; 
+        return;
+    }
+
+    error = cudaMemcpy(n_blocks, _n_blocks, array_size * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    if (error)
+    {
+        std::cout << "cudaMemcpy fail at n_blocks error: " << error << std::endl; 
+        return;
+    }
+
+    error = cudaMemcpy(x, _x, array_size * sizeof(struct chacha8_ctx), cudaMemcpyHostToDevice);
+    if (error)
+    {
+        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+        return;
+    }
+
+    // Calculate blocksize and gridsize.
+    // dim3 blockSize(512, 1, 1);
+    // dim3 gridSize(512 / array_size + 1, 1);
+
+    // chacha8_get_keystream_cuda<<<gridSize, blockSize>>>();
+    int block_dim[3] = {1, 2, 3};
+    int thread_id[3] = {1, 2, 3};
+    int grid_dim[3] = {1, 2, 3};
+
+
+    Kernel_Print<<<1, thread_block>>>(block_dim, thread_id, grid_dim);
+    std::cout << "block_dim.x: " << block_dim[0] << ", block_dim.y: " << block_dim[1] << ", block_dim.z: " << block_dim[2] << std::endl;
+    std::cout << "thread_id.x: " << thread_id[0] << ", thread_id.y: " << thread_id[1] << ", thread_id.z: " << thread_id[2] << std::endl;
+    std::cout << "grid_dim.x: " << grid_dim[0] << ", grid_dim.y: " << grid_dim[1] << ", grid_dim.z: " << grid_dim[2] << std::endl;
 }
+
+// This is host code
+void chacha8_keysetup(struct chacha8_ctx *x, const uint8_t *k, uint32_t kbits, const uint8_t *iv)
+{
+    const char *constants;
+    static const char sigma[17] = "expand 32-byte k";
+    static const char tau[17] = "expand 16-byte k";
+
+    x->input[4] = U8TO32_LITTLE(k + 0);
+    x->input[5] = U8TO32_LITTLE(k + 4);
+    x->input[6] = U8TO32_LITTLE(k + 8);
+    x->input[7] = U8TO32_LITTLE(k + 12);
+    if (kbits == 256) { /* recommended */
+        k += 16;
+        constants = sigma;
+    } else { /* kbits == 128 */
+        constants = tau;
+    }
+    x->input[8] = U8TO32_LITTLE(k + 0);
+    x->input[9] = U8TO32_LITTLE(k + 4);
+    x->input[10] = U8TO32_LITTLE(k + 8);
+    x->input[11] = U8TO32_LITTLE(k + 12);
+    x->input[0] = U8TO32_LITTLE(constants + 0);
+    x->input[1] = U8TO32_LITTLE(constants + 4);
+    x->input[2] = U8TO32_LITTLE(constants + 8);
+    x->input[3] = U8TO32_LITTLE(constants + 12);
+    if (iv) {
+        x->input[14] = U8TO32_LITTLE(iv + 0);
+        x->input[15] = U8TO32_LITTLE(iv + 4);
+    } else {
+        x->input[14] = 0;
+        x->input[15] = 0;
+    }
+}
+
+
