@@ -199,6 +199,13 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
+    error = cudaMalloc((void**) &c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0]);
+    if (error)
+    {
+        std::cout << "cudaMalloc fail at c error: " << error << std::endl; 
+        return;
+    }
+
     error = cudaMemcpy(pos, _pos, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
@@ -220,18 +227,21 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
 
-    error = cudaMemcpy(c[0], _c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyHostToDevice);
-    if (error)
-    {
-        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
-        return;
-    }
+
 
     // Calculate blocksize and gridsize.
     // dim3 blockSize(512, 1, 1);
     // dim3 gridSize(512 / array_size + 1, 1);
 
     chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks, c);
+
+    // Copy result to output
+    error = cudaMemcpy(_c[0], c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyDeviceToHost);
+    if (error)
+    {
+        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+        return;
+    }
     int block_dim[3] = {1, 2, 3};
     int thread_id[3] = {1, 2, 3};
     int grid_dim[3] = {1, 2, 3};
@@ -241,6 +251,8 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     std::cout << "block_dim.x: " << block_dim[0] << ", block_dim.y: " << block_dim[1] << ", block_dim.z: " << block_dim[2] << std::endl;
     std::cout << "thread_id.x: " << thread_id[0] << ", thread_id.y: " << thread_id[1] << ", thread_id.z: " << thread_id[2] << std::endl;
     std::cout << "grid_dim.x: " << grid_dim[0] << ", grid_dim.y: " << grid_dim[1] << ", grid_dim.z: " << grid_dim[2] << std::endl;
+
+    // free memory
 }
 
 // This is host code
