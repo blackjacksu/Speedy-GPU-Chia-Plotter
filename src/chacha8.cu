@@ -55,7 +55,7 @@ __global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 
 
 // This is the GPU device code
-__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint32_t *n_blocks, uint8_t **c)
+__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint32_t *n_blocks/*, uint8_t **c*/)
 {
     int idx = threadIdx.x;
     printf("[chacha8_get_keystream_cuda] i = %d\n", idx);
@@ -134,26 +134,26 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
             /* stopping at 2^70 bytes per nonce is user's responsibility */
         }
 
-        U32TO8_LITTLE(c[idx] + 0, x0);
-        U32TO8_LITTLE(c[idx] + 4, x1);
-        U32TO8_LITTLE(c[idx] + 8, x2);
-        U32TO8_LITTLE(c[idx] + 12, x3);
-        U32TO8_LITTLE(c[idx] + 16, x4);
-        U32TO8_LITTLE(c[idx] + 20, x5);
-        U32TO8_LITTLE(c[idx] + 24, x6);
-        U32TO8_LITTLE(c[idx] + 28, x7);
-        U32TO8_LITTLE(c[idx] + 32, x8);
-        U32TO8_LITTLE(c[idx] + 36, x9);
-        U32TO8_LITTLE(c[idx] + 40, x10);
-        U32TO8_LITTLE(c[idx] + 44, x11);
-        U32TO8_LITTLE(c[idx] + 48, x12);
-        U32TO8_LITTLE(c[idx] + 52, x13);
-        U32TO8_LITTLE(c[idx] + 56, x14);
-        U32TO8_LITTLE(c[idx] + 60, x15);
+        // U32TO8_LITTLE(c[idx] + 0, x0);
+        // U32TO8_LITTLE(c[idx] + 4, x1);
+        // U32TO8_LITTLE(c[idx] + 8, x2);
+        // U32TO8_LITTLE(c[idx] + 12, x3);
+        // U32TO8_LITTLE(c[idx] + 16, x4);
+        // U32TO8_LITTLE(c[idx] + 20, x5);
+        // U32TO8_LITTLE(c[idx] + 24, x6);
+        // U32TO8_LITTLE(c[idx] + 28, x7);
+        // U32TO8_LITTLE(c[idx] + 32, x8);
+        // U32TO8_LITTLE(c[idx] + 36, x9);
+        // U32TO8_LITTLE(c[idx] + 40, x10);
+        // U32TO8_LITTLE(c[idx] + 44, x11);
+        // U32TO8_LITTLE(c[idx] + 48, x12);
+        // U32TO8_LITTLE(c[idx] + 52, x13);
+        // U32TO8_LITTLE(c[idx] + 56, x14);
+        // U32TO8_LITTLE(c[idx] + 60, x15);
 
-        c[idx] += 64;
+        // c[idx] += 64;
 
-        printf("c is clear");
+        // printf("c is clear");
     }
 }
 
@@ -183,6 +183,8 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     // Has to handle error if memory allocation failed
     cudaError_t error;
 
+
+    // Allocate space for device
     error = cudaMalloc((void**) &pos, array_size * sizeof(uint64_t));
     if (error)
     {
@@ -203,7 +205,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         std::cout << "cudaMalloc fail at x error: " << error << std::endl; 
         return;
     }
-    std::cout << "happen error: " << std::endl; 
+    std::cout << "happen error: _n_blocks[0] = " << _n_blocks[0] << std::endl; 
     error = cudaMalloc((void**) &c, SIZE_OF_OUTPUT_PER_BLOCK * _n_blocks[0]);
     if (error)
     {
@@ -211,6 +213,8 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         return;
     }
     std::cout << "happen after error: " << std::endl; 
+
+    // Copy content from host to device
     error = cudaMemcpy(pos, _pos, array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
@@ -233,20 +237,24 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     }
 
     std::cout << "Malloc and Memcpy done" << std::endl;
+    std::cout << "x: " << x->input[0] << x->input[1] << std::endl;
+    std::cout << "n_blocks: " << n_blocks[0] << std::endl;
+    std::cout << "pos: " << pos[0] << std::endl;
+
 
     // Calculate blocksize and gridsize.
     // dim3 blockSize(512, 1, 1);
     // dim3 gridSize(512 / array_size + 1, 1);
 
-    chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks, c);
+    chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks/*, c*/);
 
-    // Copy result to output
-    error = cudaMemcpy(_c[0], c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyDeviceToHost);
-    if (error)
-    {
-        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
-        return;
-    }
+    // // Copy result to output
+    // error = cudaMemcpy(_c[0], c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyDeviceToHost);
+    // if (error)
+    // {
+    //     std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+    //     return;
+    // }
     int block_dim[3] = {1, 2, 3};
     int thread_id[3] = {1, 2, 3};
     int grid_dim[3] = {1, 2, 3};
