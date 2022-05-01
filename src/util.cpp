@@ -102,4 +102,7 @@ double RoundPow2(double a)
     return b;
 }
 
-uint32_t ByteAlign(uint32_t num_bits) { return (num_bits + (8 - ((num_bits) % 8)) % 8); }
+uint32_t ByteAlign(uint32_t num_bits) 
+{ 
+    return (num_bits + (8 - ((num_bits) % 8)) % 8); 
+}

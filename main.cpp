@@ -36,8 +36,7 @@
 #include "include/chia_filesystem.h"
 #include "include/entry_sizes.h"
 #include "include/exceptions.h"
-#include "include/phase1.h"
-#include "include/pos_constants.h"
+// #include "include/pos_constants.h"
 #include "include/sort_manager.h" 
 
 
@@ -49,7 +48,11 @@
 using namespace std;
 
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time);
+void HexToBytes(const string &hex, uint8_t *result);
+
 extern GlobalData globals;
+
+
 int main(int argc, char *argv[]) {
 
     // Execution format: ./ChiaGPUPloter <num of thread> <gpu boost mode> <k> <plot file path> 
@@ -250,6 +253,8 @@ int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::s
         filename + ".p1.t1",
         0,
         globals.stripe_size);
+    std::array<uint8_t, 32> id_bytes;
+    HexToBytes(id, id_bytes.data());
 
     // These are used for sorting on disk. The sort on disk code needs to know how
     // many elements are in each bucket.
@@ -259,13 +264,18 @@ int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::s
         // Start of parallel execution
         std::vector<std::thread> threads;
         for (int i = 0; i < num_threads; i++) {
-            threads.emplace_back(F1thread, i, k, id, &sort_manager_mutex, gpu_boost);
+            threads.emplace_back(F1thread, i, k, id_bytes.data(), &sort_manager_mutex, gpu_boost);
         }
 
         for (auto& t : threads) {
             t.join();
         }
         // end of parallel execution
+
+        // No parallel execution
+        // for (int i = 0; i < num_threads; i++) {
+        //     F1thread(i, k, id_bytes.data(), &sort_manager_mutex, gpu_boost);
+        // }
     }
 
     uint64_t prevtableentries = 1ULL << k;
@@ -274,4 +284,14 @@ int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::s
     table_sizes[1] = x + 1;
 
     return 0;
+}
+
+
+void HexToBytes(const string &hex, uint8_t *result)
+{
+    for (uint32_t i = 0; i < hex.length(); i += 2) {
+        string byteString = hex.substr(i, 2);
+        uint8_t byte = (uint8_t)strtol(byteString.c_str(), NULL, 16);
+        result[i / 2] = byte;
+    }
 }

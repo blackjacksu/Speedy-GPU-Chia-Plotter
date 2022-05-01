@@ -58,6 +58,6 @@ struct GlobalData {
 };
 
 
-void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, bool gpu_boost)
+void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, bool gpu_boost);
 
 #endif
