@@ -21,6 +21,10 @@ void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* 
 
     std::unique_ptr<uint8_t[]> right_writer_buf(new uint8_t[right_buf_entries * entry_size_bytes]);
 
+    std::cout << "Thread Id: " << index << std::endl;
+    std::cout << "End: lp = " << (((uint64_t)1) << (k - kBatchSizes)) << std::endl;
+    std::cout << "Inc: +globals.num_threads" << globals.num_threads << std::endl;
+
     // Instead of computing f1(1), f1(2), etc, for each x, we compute them in batches
     // to increase CPU efficency.
     for (uint64_t lp = index; lp <= (((uint64_t)1) << (k - kBatchSizes));
@@ -53,6 +57,8 @@ void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* 
             globals.L_sort_manager->AddToCache(&(right_writer_buf[i * entry_size_bytes]));
         }
     }
+
+    std::cout << "Thread " << index << " completed" << std::endl;
 
     return 0;
 }
