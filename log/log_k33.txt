@@ -1,0 +1,22 @@
+05012022_142016
+argc: 5
+k = 33
+gpu boost: 0
+Computing table 1
+Progress update: 0.01
+ID:022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e
+Num of thread: 
+Num of bucket: 128
+Enable GPU:0
+Thread Id: 3
+End: lp = 33554432
+Inc: +globals.num_threads
+Thread Id: 2
+End: lp = 33554432
+Inc: +globals.num_threads
+Thread Id: 1
+End: lp = 33554432
+Inc: +globals.num_threads
+Thread Id: 0
+End: lp = 33554432
+Inc: +globals.num_threads
