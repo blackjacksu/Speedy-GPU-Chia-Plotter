@@ -1,13 +1,29 @@
 // Include C++ header files.
+// #include <math.h>
+// #include <stdio.h>
+// #include <sys/stat.h>
+// #include "include/encoding.hpp"
+// #include "include/phases.hpp"
+// #include "include/phase2.hpp"
+// #include "include/b17phase2.hpp"
+// #include "include/phase3.hpp"
+// #include "include/b17phase3.hpp"
+// #include "include/phase4.hpp"
+// #include "include/b17phase4.hpp"
+
+#include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
-#include <thread>
-#include <chrono>
-#include <ctime>
+
+#include <utility>
 #include <vector>
+#include <thread>
 #include <memory>
 #include <mutex>
-
+// #include <unordered_map>
+// #include <unordered_set>
 // Include local CUDA header files.
 #include "include/cuda_kernel.cuh"
 #include "include/chacha8.cuh"
@@ -16,16 +32,24 @@
 #include "include/calculate_bucket.h"
 #include "include/disk.h"
 #include "include/phase1.h"
+#include "include/util.h"
+#include "include/chia_filesystem.h"
+#include "include/entry_sizes.h"
+#include "include/exceptions.h"
+#include "include/phase1.h"
+#include "include/pos_constants.h"
+#include "include/sort_manager.h" 
 
-using namespace std;
 
 #define MAX_THREADS 4 // Change this for HW assignment
 #define ARGC_NUM 5
 #define MAX_K 50
 #define MIN_K 32
 
-int WritePlotFile(int num_threads, uint8_t const k, const uint8_t* id, std::string file_path, std::string start_time);
+using namespace std;
 
+int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time);
+extern GlobalData globals;
 int main(int argc, char *argv[]) {
 
     // Execution format: ./ChiaGPUPloter <num of thread> <gpu boost mode> <k> <plot file path> 
@@ -108,7 +132,7 @@ int main(int argc, char *argv[]) {
     // f1.CalculateBuckets( first_x, n, res);
 
     // write to disk 
-    WritePlotFile(num_threads, k, id, plot_file_path, file_timestamp);
+    WritePlotFile(num_threads, k, gpu_boost, plot_file_path, file_timestamp);
 
     // repeat more times
 
@@ -132,14 +156,110 @@ int main(int argc, char *argv[]) {
 }
 
 
-int WritePlotFile(int num_threads, uint8_t const k, const uint8_t* id, std::string file_path, std::string start_time)
+int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time)
 {
+    uint32_t num_stripes = 0;
+    string filename = "plot.dat";
+    string tempdir = ".";
+    string tempdir2 = ".";
+    string finaldir = ".";
+    string operation = "help";
+    string memo = "0102030405";
+    string id = "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e";
+    uint32_t buf_megabytes_input = 0;
+    uint32_t num_buckets_input = 0;
+    uint64_t stripe_size_input = 0;
+
+
+    if (k < kMinPlotSize || k > kMaxPlotSize) {
+        throw InvalidValueException("Plot size k= " + std::to_string(k) + " is invalid");
+    }
+    uint32_t stripe_size, buf_megabytes, num_buckets;
+    uint8_t num_threads;
+    if (stripe_size_input != 0) {
+        stripe_size = stripe_size_input;
+    } else {
+        stripe_size = 65536;
+    }
+    if (num_threads_input != 0) {
+        num_threads = num_threads_input;
+    } else {
+        num_threads = 2;
+    }
+    if (buf_megabytes_input != 0) {
+        buf_megabytes = buf_megabytes_input;
+    } else {
+        buf_megabytes = 4608;
+    }
+    if (buf_megabytes < 10) {
+        throw InsufficientMemoryException("Please provide at least 10MiB of ram");
+    }
+    // Subtract some ram to account for dynamic allocation through the code
+    uint64_t thread_memory = num_threads * (2 * (stripe_size + 5000)) *
+                             EntrySizes::GetMaxEntrySize(k, 4, true) / (1024 * 1024);
+    uint64_t sub_mbytes = (5 + (int)std::min(buf_megabytes * 0.05, (double)50) + thread_memory);
+    if (sub_mbytes > buf_megabytes) {
+        throw InsufficientMemoryException(
+            "Please provide more memory. At least " + std::to_string(sub_mbytes));
+    }
+    uint64_t memory_size = ((uint64_t)(buf_megabytes - sub_mbytes)) * 1024 * 1024;
+    double max_table_size = 0;
+    for (size_t i = 1; i <= 7; i++) {
+        double memory_i = 1.3 * ((uint64_t)1 << k) * EntrySizes::GetMaxEntrySize(k, i, true);
+        if (memory_i > max_table_size)
+            max_table_size = memory_i;
+    }
+    if (num_buckets_input != 0) {
+        num_buckets = RoundPow2(num_buckets_input);
+    } else {
+        num_buckets = 2 * RoundPow2(ceil(
+                              ((double)max_table_size) / (memory_size * kMemSortProportion)));
+    }
+    if (num_buckets < kMinBuckets) {
+        if (num_buckets_input != 0) {
+            throw InvalidValueException("Minimum buckets is " + std::to_string(kMinBuckets));
+        }
+        num_buckets = kMinBuckets;
+    } else if (num_buckets > kMaxBuckets) {
+        if (num_buckets_input != 0) {
+            throw InvalidValueException("Maximum buckets is " + std::to_string(kMaxBuckets));
+        }
+        double required_mem =
+            (max_table_size / kMaxBuckets) / kMemSortProportion / (1024 * 1024) + sub_mbytes;
+        throw InsufficientMemoryException(
+            "Do not have enough memory. Need " + std::to_string(required_mem) + " MiB");
+    }
+    uint32_t log_num_buckets = log2(num_buckets);
+
+    std::cout << "Computing table 1" << std::endl;
+    std::cout << "Progress update: 0.01" << std::endl;
+    globals.stripe_size = stripe_size;
+    globals.num_threads = num_threads;
+    Timer f1_start_time;
+    uint64_t x = 0;
+
+    std::string tmp_dirname = tempdir;
+
+    uint32_t const t1_entry_size_bytes = EntrySizes::GetMaxEntrySize(k, 1, true);
+    globals.L_sort_manager = std::make_unique<SortManager>(
+        memory_size,
+        num_buckets,
+        log_num_buckets,
+        t1_entry_size_bytes,
+        tmp_dirname,
+        filename + ".p1.t1",
+        0,
+        globals.stripe_size);
+
+    // These are used for sorting on disk. The sort on disk code needs to know how
+    // many elements are in each bucket.
+    std::vector<uint64_t> table_sizes = std::vector<uint64_t>(8, 0);
     std::mutex sort_manager_mutex;
     {
         // Start of parallel execution
         std::vector<std::thread> threads;
         for (int i = 0; i < num_threads; i++) {
-            threads.emplace_back(F1thread, i, k, id, &sort_manager_mutex, file_path, start_time);
+            threads.emplace_back(F1thread, i, k, id, &sort_manager_mutex, gpu_boost);
         }
 
         for (auto& t : threads) {
@@ -147,6 +267,11 @@ int WritePlotFile(int num_threads, uint8_t const k, const uint8_t* id, std::stri
         }
         // end of parallel execution
     }
+
+    uint64_t prevtableentries = 1ULL << k;
+    f1_start_time.PrintElapsed("F1 complete, time:");
+    globals.L_sort_manager->FlushCache();
+    table_sizes[1] = x + 1;
 
     return 0;
 }

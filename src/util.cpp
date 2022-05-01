@@ -76,3 +76,30 @@ void IntTo16Bytes(uint8_t *result, const uint128_t input)
    r = bswap_64((uint64_t)input);
    memcpy(result + 8, &r, sizeof(r));
 }
+
+uint64_t ExtractNum(
+    const uint8_t *bytes,
+    uint32_t len_bytes,
+    uint32_t begin_bits,
+    uint32_t take_bits)
+{
+    if ((begin_bits + take_bits) / 8 > len_bytes - 1) {
+        take_bits = len_bytes * 8 - begin_bits;
+    }
+    return SliceInt64FromBytes(bytes, begin_bits, take_bits);
+}
+
+double RoundPow2(double a)
+{
+    // https://stackoverflow.com/questions/54611562/truncate-float-to-nearest-power-of-2-in-c-performance
+    int exp;
+    double frac = frexp(a, &exp);
+    if (frac > 0.0)
+        frac = 0.5;
+    else if (frac < 0.0)
+        frac = -0.5;
+    double b = ldexp(frac, exp);
+    return b;
+}
+
+uint32_t ByteAlign(uint32_t num_bits) { return (num_bits + (8 - ((num_bits) % 8)) % 8); }

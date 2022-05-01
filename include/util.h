@@ -15,17 +15,21 @@
 #ifndef SRC_CPP_UTIL_HPP_
 #define SRC_CPP_UTIL_HPP_
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <numeric>
-#include <cstring>
-#include <utility>
 #include <cassert>
 #include <chrono>
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <queue>
+#include <random>
+#include <set>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 typedef __uint128_t uint128_t;
 
@@ -68,5 +72,15 @@ uint64_t SliceInt64FromBytes(
 uint64_t EightBytesToInt(const uint8_t *bytes);
 
 void IntTo16Bytes(uint8_t *result, const uint128_t input);
+
+uint64_t ExtractNum(
+    const uint8_t *bytes,
+    uint32_t len_bytes,
+    uint32_t begin_bits,
+    uint32_t take_bits);
+
+double RoundPow2(double a);
+
+uint32_t ByteAlign(uint32_t num_bits);
 
 #endif

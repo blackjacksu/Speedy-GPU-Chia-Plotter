@@ -34,19 +34,19 @@ void load_tables()
 }
 
 
-F1Calculator::F1Calculator()
-{
-    // Default constructor
-    std::cout << "Default F1Calculator" << std::endl;
-    gpu_boost = false;
-}
+// F1Calculator::F1Calculator()
+// {
+//     // Default constructor
+//     std::cout << "Default F1Calculator" << std::endl;
+//     gpu_boost = false;
+// }
 
-F1Calculator::F1Calculator(bool _gpu_boost)
-{
-    // Default constructor
-    std::cout << "Default F1Calculator" << std::endl;
-    gpu_boost = _gpu_boost;
-}
+// F1Calculator::F1Calculator(bool _gpu_boost)
+// {
+//     // Default constructor
+//     std::cout << "Default F1Calculator" << std::endl;
+//     gpu_boost = _gpu_boost;
+// }
 
 F1Calculator::F1Calculator(uint8_t k, const uint8_t* orig_key, bool _gpu_boost)
 {

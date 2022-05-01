@@ -23,6 +23,8 @@
 #include <thread>
 #include <chrono>
 
+
+
 // enables disk I/O logging to disk.log
 // use tools/disk.gnuplot to generate a plot
 #define ENABLE_LOGGING 0
@@ -30,10 +32,11 @@
 using namespace std::chrono_literals; // for operator""min;
 
 // #include "chia_filesystem.hpp"
-
+#include "chia_filesystem.h"
 // #include "./bits.hpp"
 #include "util.h"
 // #include "bitfield.hpp"
+#include "exceptions.h"
 
 constexpr uint64_t write_cache = 1024 * 1024;
 constexpr uint64_t read_ahead = 1024 * 1024;
@@ -96,16 +99,14 @@ void disk_log(fs::path const& filename, op_t const op, uint64_t offset, uint64_t
     ::close(fd);
 }
 #endif
-
 struct FileDisk {
-    explicit FileDisk(/*const std::string &filepath,*/ const std::string &filename);
+    explicit FileDisk(const fs::path &filename);
 
     void Open(uint8_t flags = 0);
 
     FileDisk(FileDisk &&fd);
-
-    // FileDisk(const FileDisk &) = delete;
-    // FileDisk &operator=(const FileDisk &) = delete;
+    FileDisk(const FileDisk &) = delete;
+    FileDisk &operator=(const FileDisk &) = delete;
 
     void Close();
 
@@ -116,13 +117,10 @@ struct FileDisk {
     void Write(uint64_t begin, const uint8_t *memcache, uint64_t length);
 
     std::string GetFileName();
-    
-    std::string GetPathName();
 
     uint64_t GetWriteMax();
 
     void Truncate(uint64_t new_size);
-
 private:
 
     uint64_t readPos = 0;
@@ -130,12 +128,49 @@ private:
     uint64_t writeMax = 0;
     bool bReading = true;
 
-    std::string filename_;
-    std::string filepath_;
+    fs::path filename_;
     FILE *f_ = nullptr;
 
     static const uint8_t writeFlag = 0b01;
     static const uint8_t retryOpenFlag = 0b10;
+};
+
+struct BufferedDisk : Disk
+{
+    BufferedDisk(FileDisk* disk, uint64_t file_size);
+
+    uint8_t const* Read(uint64_t begin, uint64_t length) override;
+
+    void Write(uint64_t const begin, const uint8_t *memcache, uint64_t const length) override;
+
+    void Truncate(uint64_t const new_size) override;
+
+    std::string GetFileName() override;
+
+    void FreeMemory() override;
+
+    void FlushCache();
+
+private:
+
+    void NeedReadCache();
+
+    void NeedWriteCache();
+
+    FileDisk* disk_;
+
+    uint64_t file_size_;
+
+    // the file offset the read buffer was read from
+    uint64_t read_buffer_start_ = -1;
+    std::unique_ptr<uint8_t[]> read_buffer_;
+    uint64_t read_buffer_size_ = 0;
+
+    // the file offset the write buffer should be written back to
+    // the write buffer is *only* for contiguous and sequential writes
+    uint64_t write_buffer_start_ = -1;
+    std::unique_ptr<uint8_t[]> write_buffer_;
+    uint64_t write_buffer_size_ = 0;
 };
 
 #endif

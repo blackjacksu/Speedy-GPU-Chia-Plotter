@@ -28,10 +28,9 @@
 // #include "b3/blake3.h"
 // #include "bits.hpp"
 #include "chacha8.cuh"
-// #include "pos_constants.hpp"
+#include "pos_constants.h"
 #include "util.h"
 
-#define kBatchSizes 8
 
 // ChaCha8 block size
 const uint16_t kF1BlockSizeBits = 512;
@@ -59,9 +58,9 @@ static const uint8_t kVectorLens[] = {0, 0, 1, 2, 4, 4, 3, 2};
 // Class to evaluate F1
 class F1Calculator {
 public:
-    F1Calculator();
+    F1Calculator() = default;
 
-    F1Calculator(bool _gpu_boost);
+    // F1Calculator(bool _gpu_boost);
 
     F1Calculator(uint8_t k, const uint8_t* orig_key, bool _gpu_boost);
 

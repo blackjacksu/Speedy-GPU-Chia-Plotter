@@ -35,10 +35,10 @@
 // #include "chia_filesystem.hpp"
 
 #include "calculate_bucket.h"
-// #include "entry_sizes.hpp"
-// #include "exceptions.hpp"
-// #include "pos_constants.hpp"
-// #include "sort_manager.hpp"
+#include "entry_sizes.h"
+#include "exceptions.h"
+#include "pos_constants.h"
+#include "sort_manager.h"
 // #include "threading.hpp"
 #include "util.h"
 #include "disk.h"
@@ -48,8 +48,8 @@ struct GlobalData {
     uint64_t left_writer_count;
     uint64_t right_writer_count;
     uint64_t matches;
-    // std::unique_ptr<SortManager> L_sort_manager;
-    // std::unique_ptr<SortManager> R_sort_manager;
+    std::unique_ptr<SortManager> L_sort_manager;
+    std::unique_ptr<SortManager> R_sort_manager;
     uint64_t left_writer_buf_entries;
     uint64_t left_writer;
     uint64_t right_writer;
@@ -58,6 +58,6 @@ struct GlobalData {
 };
 
 
-void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, std::string file_path, std::string start_time);
+void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, bool gpu_boost)
 
 #endif

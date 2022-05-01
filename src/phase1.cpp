@@ -2,27 +2,24 @@
 
 GlobalData globals;
 
-void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, std::string file_path, std::string start_time)
+void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* smm, bool gpu_boost)
 {
     uint32_t const entry_size_bytes = 16;
     uint64_t const max_value = ((uint64_t)1 << (k));
     uint64_t const right_buf_entries = 1 << (kBatchSizes);
-    bool gpu_boost = false;
 
     std::unique_ptr<uint64_t[]> f1_entries(new uint64_t[(1U << kBatchSizes)]);
 
     F1Calculator f1(k, id, gpu_boost);
-    std::string file_name = "plot_disk_k";
-    file_name += std::to_string(k);
-    file_name += "_";
-    file_name += start_time;
-    std::cout << "File: " << file_name << std::endl;
-    FileDisk plot_file(/*file_path,*/ file_name);
+    // std::string file_name = "plot_disk_k";
+    // file_name += std::to_string(k);
+    // file_name += "_";
+    // std::cout << "File: " << file_name << std::endl;
+    // FileDisk plot_file(/*file_path,*/ file_name);
 
-    std::cout << plot_file.GetFileName() << std::endl;
+    // std::cout << plot_file.GetFileName() << std::endl;
 
     std::unique_ptr<uint8_t[]> right_writer_buf(new uint8_t[right_buf_entries * entry_size_bytes]);
-
     return 0;
 
     // Instead of computing f1(1), f1(2), etc, for each x, we compute them in batches
@@ -52,10 +49,10 @@ void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* 
 
         std::lock_guard<std::mutex> l(*smm);
 
-        // // Write it out
-        // for (uint32_t i = 0; i < right_writer_count; i++) {
-        //     plot_file->Write(&(right_writer_buf[i * entry_size_bytes]));
-        // }
+        // Write it out
+        for (uint32_t i = 0; i < right_writer_count; i++) {
+            globals.L_sort_manager->AddToCache(&(right_writer_buf[i * entry_size_bytes]));
+        }
     }
 
     return 0;
