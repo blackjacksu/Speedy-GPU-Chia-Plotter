@@ -43,7 +43,7 @@
 #define MAX_THREADS 4 // Change this for HW assignment
 #define ARGC_NUM 5
 #define MAX_K 50
-#define MIN_K 32
+#define MIN_K 0 // Should be 32, but we are testing
 
 using namespace std;
 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     argc--;
     if (atoi(argv[argc]) < MIN_K || atoi(argv[argc]) > 50)
     {
-        cout << "Notice the range of k (plot constant) is 32~50" << endl;
+        cout << "Notice the range of k (plot constant) is 0~50" << endl;
         exit(0);
     }
     k = atoi(argv[argc]);
@@ -236,9 +236,14 @@ int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::s
 
     std::cout << "Computing table 1" << std::endl;
     std::cout << "Progress update: 0.01" << std::endl;
+    std::cout << "ID:" << id << std::endl;
+    std::cout << "Num of thread: " << num_threads << std::endl;
+    std::cout << "Num of bucket: " << num_buckets << std::endl;
+    std::cout << "Enable GPU:" << gpu_boost << std::endl;
+
+
     globals.stripe_size = stripe_size;
     globals.num_threads = num_threads;
-    Timer f1_start_time;
     uint64_t x = 0;
 
     std::string tmp_dirname = tempdir;
@@ -276,10 +281,11 @@ int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::s
         // for (int i = 0; i < num_threads; i++) {
         //     F1thread(i, k, id_bytes.data(), &sort_manager_mutex, gpu_boost);
         // }
-    }
+    }    
+    
+    std::cout << "Flush to cache" << std::endl;
 
     uint64_t prevtableentries = 1ULL << k;
-    f1_start_time.PrintElapsed("F1 complete, time:");
     globals.L_sort_manager->FlushCache();
     table_sizes[1] = x + 1;
 
