@@ -29,4 +29,11 @@
 
 #First Executable Line
 ml CUDA
-./ChiaGPUPlotter
+./ChiaGPUPlotter 4 0 32 /scratch/user/willytwsu/plot/
+./ChiaGPUPlotter 4 0 33 /scratch/user/willytwsu/plot/
+./ChiaGPUPlotter 4 0 34 /scratch/user/willytwsu/plot/
+
+
+# ./ChiaGPUPlotter 4 1 32 /scratch/user/willytwsu/plot/
+# ./ChiaGPUPlotter 4 1 32 /scratch/user/willytwsu/plot/
+# ./ChiaGPUPlotter 4 1 32 /scratch/user/willytwsu/plot/
