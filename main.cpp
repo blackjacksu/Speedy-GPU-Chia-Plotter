@@ -22,6 +22,17 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+
+
+#define Test_GPU 1
+
+#if Test_GPU
+#include "include/chacha8.cuh"
+#include <array>
+
+
+
+#else
 // #include <unordered_map>
 // #include <unordered_set>
 // Include local CUDA header files.
@@ -39,10 +50,7 @@
 // #include "include/pos_constants.h"
 #include "include/sort_manager.h" 
 
-#define Test_GPU 1
-
-#if Test_GPU
-#include "include/chacha8.cuh"
+extern GlobalData globals;
 #endif
 
 #define MAX_THREADS 4 // Change this for HW assignment
@@ -54,12 +62,13 @@ using namespace std;
 
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time);
 void HexToBytes(const string &hex, uint8_t *result);
-void init_data(struct chacha_ctx &_x, uint64_t &pos, uint32_t &n_blocks);
+void init_data(struct chacha8_ctx * x, uint64_t *pos, uint32_t *n_blocks);
 
-extern GlobalData globals;
 
-void init_data(struct chacha_ctx &_x, uint64_t &pos, uint32_t &n_blocks)
+
+void init_data(struct chacha8_ctx * x, uint64_t *pos, uint32_t *n_blocks)
 {
+
     x[0].input[0] = 0;
     x[0].input[1] = 1;
     x[0].input[2] = 2;
@@ -127,6 +136,9 @@ void init_data(struct chacha_ctx &_x, uint64_t &pos, uint32_t &n_blocks)
     x[3].input[13] = 43;
     x[3].input[14] = 44;
     x[3].input[15] = 45;
+
+    pos[0] = 1;
+
 }
 
 int main(int argc, char *argv[]) {
@@ -137,11 +149,12 @@ int main(int argc, char *argv[]) {
     struct chacha8_ctx x[4];
     uint64_t pos[4];
     uint32_t n_blocks[4];
-    uint8_t c[4][128];
+    uint8_t **c;
 
     init_data(x, pos, n_blocks);
 
-    get_chacha8_key(x, pos, n_block, c, size);
+    get_chacha8_key(x, pos, n_blocks, c, size);
+
 #elif
 
     // Execution format: ./ChiaGPUPloter <num of thread> <gpu boost mode> <k> <plot file path> 
@@ -248,7 +261,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-
+#if Test_GPU
+#elif
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time)
 {
     uint32_t num_stripes = 0;
@@ -391,3 +405,4 @@ void HexToBytes(const string &hex, uint8_t *result)
         result[i / 2] = byte;
     }
 }
+#endif

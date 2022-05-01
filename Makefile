@@ -59,8 +59,9 @@ INC_DIR = include
 EXE = ChiaGPUPlotter
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/util.o $(OBJ_DIR)/calculate_bucket.o $(OBJ_DIR)/phase1.o \
-		$(OBJ_DIR)/disk.o $(OBJ_DIR)/sort_manager.o $(OBJ_DIR)/entry_sizes.o 
+OBJS = $(OBJ_DIR)/main.o 
+# $(OBJ_DIR)/util.o $(OBJ_DIR)/calculate_bucket.o $(OBJ_DIR)/phase1.o \
+# 		$(OBJ_DIR)/disk.o $(OBJ_DIR)/sort_manager.o $(OBJ_DIR)/entry_sizes.o 
 
 KERNEL_OBJS = $(OBJ_DIR)/cuda_kernel.o $(OBJ_DIR)/chacha8.o 
 

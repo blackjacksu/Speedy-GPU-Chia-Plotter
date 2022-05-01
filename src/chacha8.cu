@@ -81,7 +81,8 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
     j14 = x[idx].input[14];
     j15 = x[idx].input[15];
 
-    printf("x is clear\n");
+    printf("x is clear j0=%d\n, j0");
+    printf("x is clear j1=%d\n, j1");
 
     while (n_blocks[idx]--) {
         printf("n block is clear, n_blocks[idx]: %d\n", n_blocks[idx]);
@@ -159,7 +160,7 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
 
 
 
-void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
+void get_chacha8_key(struct chacha8_ctx * _x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
 {
     // 
     // std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
@@ -238,6 +239,8 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
         std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
         return;
     }
+    
+    chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks/*, c*/);
 
     // std::cout << "Malloc and Memcpy done" << std::endl;
     // // std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
@@ -249,7 +252,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     // // dim3 blockSize(512, 1, 1);
     // // dim3 gridSize(512 / array_size + 1, 1);
 
-    // chacha8_get_keystream_cuda<<<1, thread_block>>>(x, pos, n_blocks/*, c*/);
+
 
     // // Copy result to output
     // error = cudaMemcpy(_c[0], c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyDeviceToHost);
@@ -258,6 +261,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     //     std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
     //     return;
     // }
+/*
     int block_dim[3] = {1, 2, 3};
     int thread_id[3] = {1, 2, 3};
     int grid_dim[3] = {1, 2, 3};
@@ -267,7 +271,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     std::cout << "block_dim.x: " << block_dim[0] << ", block_dim.y: " << block_dim[1] << ", block_dim.z: " << block_dim[2] << std::endl;
     std::cout << "thread_id.x: " << thread_id[0] << ", thread_id.y: " << thread_id[1] << ", thread_id.z: " << thread_id[2] << std::endl;
     std::cout << "grid_dim.x: " << grid_dim[0] << ", grid_dim.y: " << grid_dim[1] << ", grid_dim.z: " << grid_dim[2] << std::endl;
-
+*/
     // free memory
     
 }
