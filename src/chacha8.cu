@@ -162,12 +162,15 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
 void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks, uint8_t **_c, int array_size)
 {
     // 
-    std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
-    std::cout << "Size of * uint64_t:" << sizeof(_pos) << std::endl;
-    std::cout << "Size of uint32_t:" << sizeof(uint32_t) << std::endl;
-    std::cout << "Size of * uint32_t:" << sizeof(_n_blocks) << std::endl;
-    std::cout << "Size of struct chacha8_ctx:" << sizeof(struct chacha8_ctx) << std::endl;
-
+    // std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
+    // std::cout << "Size of * uint64_t:" << sizeof(_pos) << std::endl;
+    // std::cout << "Size of uint32_t:" << sizeof(uint32_t) << std::endl;
+    // std::cout << "Size of * uint32_t:" << sizeof(_n_blocks) << std::endl;
+    // std::cout << "Size of struct chacha8_ctx:" << sizeof(struct chacha8_ctx) << std::endl;
+    std::cout << "x[0].input[5]: " << _x[0].input[5] << std::endl;
+    std::cout << "x[1].input[5]: " << _x[1].input[5] << std::endl;
+    std::cout << "x[2].input[5]: " << _x[2].input[5] << std::endl;
+    std::cout << "x[3].input[5]: " << _x[3].input[5] << std::endl;
     if (array_size > MAX_ARRAY_SIZE)
     {
         std::cout << "Array size out of bound" << std::endl;
@@ -266,6 +269,7 @@ void get_chacha8_key(struct chacha8_ctx *_x, uint64_t *_pos, uint32_t *_n_blocks
     std::cout << "grid_dim.x: " << grid_dim[0] << ", grid_dim.y: " << grid_dim[1] << ", grid_dim.z: " << grid_dim[2] << std::endl;
 
     // free memory
+    
 }
 
 // This is host code

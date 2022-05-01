@@ -82,6 +82,7 @@ void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
 
     if (gpu_boost)
     {
+        // Using GPU for chacha8
         pos[0] = start;
         n_block[0] = num_blocks;
         memcpy(x, &this->enc_ctx_, sizeof(struct chacha8_ctx));
@@ -90,6 +91,7 @@ void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
     }
     else
     {
+        // Using CPU only
         chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
     }
 
