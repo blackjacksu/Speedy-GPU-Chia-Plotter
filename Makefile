@@ -89,7 +89,7 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cu $(INC_DIR)/%.cuh
 
 # Clean objects in object directory.
 clean:
-	$(RM) bin/* *.o $(EXE)
+	$(RM) bin/* *.o *.tmp $(EXE)
 
 
 

@@ -20,7 +20,6 @@ void* F1thread(int const index, uint8_t const k, const uint8_t* id, std::mutex* 
     // std::cout << plot_file.GetFileName() << std::endl;
 
     std::unique_ptr<uint8_t[]> right_writer_buf(new uint8_t[right_buf_entries * entry_size_bytes]);
-    return 0;
 
     // Instead of computing f1(1), f1(2), etc, for each x, we compute them in batches
     // to increase CPU efficency.
