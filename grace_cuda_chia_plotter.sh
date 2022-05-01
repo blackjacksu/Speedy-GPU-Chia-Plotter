@@ -28,6 +28,7 @@
 ##SBATCH --mail-user=email_address    #Send all emails to email_address 
 
 #First Executable Line
+ml intel/2020a
 ml CUDA
 ./ChiaGPUPlotter 4 0 32 /scratch/user/willytwsu/plot/ > log_k32.txt
 ./ChiaGPUPlotter 4 0 33 /scratch/user/willytwsu/plot/ > log_k33.txt
