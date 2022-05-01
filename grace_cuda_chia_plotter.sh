@@ -15,7 +15,7 @@
 
 ##NECESSARY JOB SPECIFICATIONS
 #SBATCH --job-name=JobExample4       #Set the job name to "JobExample4"
-#SBATCH --time=00:30:00              #Set the wall clock limit to 1hr and 30min
+#SBATCH --time=02:00:00              #Set the wall clock limit to 1hr and 30min
 #SBATCH --ntasks=1                   #Request 1 task
 #SBATCH --mem=2560M                  #Request 2560MB (2.5GB) per node
 #SBATCH --output=Example4Out.%j      #Send stdout/err to "Example4Out.[jobID]"
@@ -30,9 +30,9 @@
 #First Executable Line
 ml intel/2020a
 ml CUDA
-./ChiaGPUPlotter 4 0 32 /scratch/user/willytwsu/plot/ > log_k32.txt
-./ChiaGPUPlotter 4 0 33 /scratch/user/willytwsu/plot/ > log_k33.txt
-./ChiaGPUPlotter 4 0 34 /scratch/user/willytwsu/plot/ > log_k34.txt
+# ./ChiaGPUPlotter 4 0 32 /scratch/user/willytwsu/plot/ > log_k32_%j.txt
+./ChiaGPUPlotter 4 0 33 /scratch/user/willytwsu/plot/ > log_k33_%j.txt
+./ChiaGPUPlotter 4 0 34 /scratch/user/willytwsu/plot/ > log_k34_%j.txt
 
 
 # ./ChiaGPUPlotter 4 1 32 /scratch/user/willytwsu/plot/
