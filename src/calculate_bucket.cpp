@@ -90,7 +90,7 @@ void F1Calculator::CalculateBuckets_Boost(uint64_t first_x[GPU_GROUP_SIZE], uint
 {
     int j = 0;
     int size = GPU_GROUP_SIZE;
-    int buf_size = 0;
+    uint64_t buf_size = 0;
 
     for (j = 0 ; j < GPU_GROUP_SIZE; j++)
     {

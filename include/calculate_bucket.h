@@ -88,7 +88,7 @@ private:
     uint64_t start[GPU_GROUP_SIZE];
     uint64_t end[GPU_GROUP_SIZE];
     uint64_t num_blocks[GPU_GROUP_SIZE];
-    uint8_t buf_start_index[GPU_GROUP_SIZE];
+    uint64_t buf_start_index[GPU_GROUP_SIZE];
     uint32_t start_bit[GPU_GROUP_SIZE];
     uint8_t x_shift[GPU_GROUP_SIZE];
 };
