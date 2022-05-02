@@ -24,14 +24,11 @@
 #include <mutex>
 
 
-#define Test_GPU 1
+#define Test_GPU 0
 
 #if Test_GPU
 #include "include/chacha8.cuh"
 #include <array>
-
-
-
 #else
 // #include <unordered_map>
 // #include <unordered_set>
@@ -50,7 +47,7 @@
 // #include "include/pos_constants.h"
 #include "include/sort_manager.h" 
 
-extern GlobalData globals;
+
 #endif
 
 #define MAX_THREADS 4 // Change this for HW assignment
@@ -62,11 +59,13 @@ using namespace std;
 
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time);
 void HexToBytes(const string &hex, uint8_t *result);
-void init_data(struct chacha8_ctx * x, uint64_t *pos, uint32_t *n_blocks);
+void init_data(struct chacha8_ctx * x, uint64_t *pos, uint64_t *n_blocks);
+#if Test_GPU
 
-
-
-void init_data(struct chacha8_ctx * x, uint64_t *pos, uint32_t *n_blocks)
+#else
+extern GlobalData globals;
+#endif
+void init_data(struct chacha8_ctx * x, uint64_t *pos, uint64_t *n_blocks)
 {
 
     x[0].input[0] = 0;
@@ -86,57 +85,6 @@ void init_data(struct chacha8_ctx * x, uint64_t *pos, uint32_t *n_blocks)
     x[0].input[14] = 14;
     x[0].input[15] = 15;
 
-    x[1].input[0] = 10;
-    x[1].input[1] = 11;
-    x[1].input[2] = 12;
-    x[1].input[3] = 13;
-    x[1].input[4] = 14;
-    x[1].input[5] = 15;
-    x[1].input[6] = 16;
-    x[1].input[7] = 17;
-    x[1].input[8] = 18;
-    x[1].input[9] = 19;
-    x[1].input[10] = 20;
-    x[1].input[11] = 21;
-    x[1].input[12] = 22;
-    x[1].input[13] = 23;
-    x[1].input[14] = 24;
-    x[1].input[15] = 25;
-
-    x[2].input[0] = 20;
-    x[2].input[1] = 21;
-    x[2].input[2] = 22;
-    x[2].input[3] = 23;
-    x[2].input[4] = 24;
-    x[2].input[5] = 25;
-    x[2].input[6] = 26;
-    x[2].input[7] = 27;
-    x[2].input[8] = 28;
-    x[2].input[9] = 29;
-    x[2].input[10] = 30;
-    x[2].input[11] = 31;
-    x[2].input[12] = 32;
-    x[2].input[13] = 33;
-    x[2].input[14] = 34;
-    x[2].input[15] = 35;
-
-    x[3].input[0] = 30;
-    x[3].input[1] = 31;
-    x[3].input[2] = 32;
-    x[3].input[3] = 33;
-    x[3].input[4] = 34;
-    x[3].input[5] = 35;
-    x[3].input[6] = 36;
-    x[3].input[7] = 37;
-    x[3].input[8] = 38;
-    x[3].input[9] = 39;
-    x[3].input[10] = 40;
-    x[3].input[11] = 41;
-    x[3].input[12] = 42;
-    x[3].input[13] = 43;
-    x[3].input[14] = 44;
-    x[3].input[15] = 45;
-
     pos[0] = 1;
     pos[1] = 1;
     pos[2] = 1;
@@ -153,16 +101,22 @@ int main(int argc, char *argv[]) {
 #if Test_GPU
     // Using GPU for chacha8
     int size = 4;
-    struct chacha8_ctx x[4];
+    struct chacha8_ctx x[1];
     uint64_t pos[4];
-    uint32_t n_blocks[4];
-    uint8_t **c;
+    uint64_t n_blocks[4];
+    uint8_t *c;
+
+    uint8_t block_size = 0;
+    for (int i = 0 ; i < 4 ; i++)
+    {
+        block_size += n_blocks[i];
+    }
 
     init_data(x, pos, n_blocks);
 
-    get_chacha8_key(x, pos, n_blocks, c, size);
+    get_chacha8_key(x, pos, n_blocks, c, block_size, size);
 
-#elif
+#else
 
     // Execution format: ./ChiaGPUPloter <num of thread> <gpu boost mode> <k> <plot file path> 
     // For example: ./ChiaGPUPlotter 4 0 32 /scratch/user/willytwsu/plot/
@@ -269,7 +223,8 @@ int main(int argc, char *argv[]) {
 }
 
 #if Test_GPU
-#elif
+
+#else
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time)
 {
     uint32_t num_stripes = 0;

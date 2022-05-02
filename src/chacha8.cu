@@ -55,7 +55,7 @@ __global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 
 
 // This is the GPU device code
-__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint32_t *n_blocks/*, uint8_t **c*/, int array_size)
+__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint64_t *n_blocks, uint8_t *c, int array_size)
 {
     int idx = threadIdx.x;
     printf("[chacha8_get_keystream_cuda] i = %d\n", idx);
@@ -70,22 +70,22 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
     uint32_t j0, j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12, j13, j14, j15;
     int i;
 
-    j0 = x[idx].input[0];
-    j1 = x[idx].input[1];
-    j2 = x[idx].input[2];
-    j3 = x[idx].input[3];
-    j4 = x[idx].input[4];
-    j5 = x[idx].input[5];
-    j6 = x[idx].input[6];
-    j7 = x[idx].input[7];
-    j8 = x[idx].input[8];
-    j9 = x[idx].input[9];
-    j10 = x[idx].input[10];
-    j11 = x[idx].input[11];
+    j0 = x->input[0];
+    j1 = x->input[1];
+    j2 = x->input[2];
+    j3 = x->input[3];
+    j4 = x->input[4];
+    j5 = x->input[5];
+    j6 = x->input[6];
+    j7 = x->input[7];
+    j8 = x->input[8];
+    j9 = x->input[9];
+    j10 = x->input[10];
+    j11 = x->input[11];
     j12 = pos[idx];
     j13 = pos[idx] >> 32;
-    j14 = x[idx].input[14];
-    j15 = x[idx].input[15];
+    j14 = x->input[14];
+    j15 = x->input[15];
 
     printf("x is clear j0=%d\n, j0");
     printf("x is clear j1=%d\n, j1");
@@ -169,7 +169,7 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
 
 
 
-void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_blocks, uint8_t **h_c, int h_array_size)
+void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blocks, uint8_t *h_c, uint8_t h_c_size, int h_array_size)
 {
     // 
     // std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
@@ -192,8 +192,8 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
 
     struct chacha8_ctx *d_x;
     uint64_t *d_pos;
-    uint32_t *d_n_blocks;
-    uint8_t **d_c;
+    uint64_t *d_n_blocks;
+    uint8_t *d_c;
     int block_per_grid = 1;
     int thread_per_block = h_array_size;
 
@@ -209,7 +209,7 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
         return;
     }
 
-    error = cudaMalloc((void**) &d_n_blocks, h_array_size * sizeof(uint32_t));
+    error = cudaMalloc((void**) &d_n_blocks, h_array_size * sizeof(uint64_t));
     if (error)
     {
         std::cout << "cudaMalloc fail at n_blocks error: " << error << std::endl; 
@@ -222,14 +222,13 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
         std::cout << "cudaMalloc fail at x error: " << error << std::endl; 
         return;
     }
-    std::cout << "happen error: _n_blocks[0] = " << h_n_blocks[0] << std::endl; 
-    error = cudaMalloc((void**) &d_c, SIZE_OF_OUTPUT_PER_BLOCK * h_n_blocks[0]);
+    
+    error = cudaMalloc((void**) &d_c, h_c_size * sizeof(uint8_t));
     if (error)
     {
         std::cout << "cudaMalloc fail at c error: " << error << std::endl; 
         return;
     }
-    std::cout << "happen after error: " << std::endl; 
 
     // Copy content from host to device
     error = cudaMemcpy(d_pos, h_pos, h_array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
@@ -239,7 +238,7 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
         return;
     }
 
-    error = cudaMemcpy(d_n_blocks, h_n_blocks, h_array_size * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    error = cudaMemcpy(d_n_blocks, h_n_blocks, h_array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
         std::cout << "cudaMemcpy fail at n_blocks error: " << error << std::endl; 
@@ -253,7 +252,7 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
         return;
     }
 
-    chacha8_get_keystream_cuda<<<block_per_grid, thread_per_block>>>(d_x, d_pos, d_n_blocks/*, c*/, h_array_size);
+    chacha8_get_keystream_cuda<<<block_per_grid, thread_per_block>>>(d_x, d_pos, d_n_blocks, d_c, h_array_size);
 
     // std::cout << "Malloc and Memcpy done" << std::endl;
     // // std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
@@ -268,12 +267,12 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
 
 
     // // Copy result to output
-    // error = cudaMemcpy(_c[0], c[0], SIZE_OF_OUTPUT_PER_BLOCK * n_blocks[0], cudaMemcpyDeviceToHost);
-    // if (error)
-    // {
-    //     std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
-    //     return;
-    // }
+    error = cudaMemcpy(h_c, d_c, h_c_size * sizeof(uint8_t), cudaMemcpyDeviceToHost);
+    if (error)
+    {
+        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+        return;
+    }
 
     int * block_dim;
     int * thread_id;
@@ -294,25 +293,25 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
 
     std::cout << "bd:" << bd[0] << bd[1] << bd[2] << std::endl;
 
-    // free memory
-    error = cudaFree(d_x);
-    if (error)
-    {
-        std::cout << "cudaFree fail at d_x error: " << error << std::endl; 
-        return;
-    }
-    error = cudaFree(d_pos);
-    if (error)
-    {
-        std::cout << "cudaFree fail at d_pos error: " << error << std::endl; 
-        return;
-    }
-    error = cudaFree(d_n_blocks);
-    if (error)
-    {
-        std::cout << "cudaFree fail at d_n_blocks error: " << error << std::endl; 
-        return;
-    }
+    // // free memory
+    // error = cudaFree(d_x);
+    // if (error)
+    // {
+    //     std::cout << "cudaFree fail at d_x error: " << error << std::endl; 
+    //     return;
+    // }
+    // error = cudaFree(d_pos);
+    // if (error)
+    // {
+    //     std::cout << "cudaFree fail at d_pos error: " << error << std::endl; 
+    //     return;
+    // }
+    // error = cudaFree(d_n_blocks);
+    // if (error)
+    // {
+    //     std::cout << "cudaFree fail at d_n_blocks error: " << error << std::endl; 
+    //     return;
+    // }
 }
 
 // This is host code
