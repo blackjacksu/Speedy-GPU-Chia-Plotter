@@ -12,7 +12,7 @@ CUDA_ROOT_DIR=/sw/eb/sw/CUDA/11.4.1
 # CC compiler options:
 CC=g++
 CC_FLAGS=-std=c++17 -Wall
-CC_LIBS=
+CC_LIBS= -lpthread
 
 ##########################################################
 
@@ -59,25 +59,28 @@ INC_DIR = include
 EXE = ChiaGPUPlotter
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/cuda_kernel.o $(OBJ_DIR)/chacha8.o 
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/util.o $(OBJ_DIR)/calculate_bucket.o $(OBJ_DIR)/phase1.o \
+		$(OBJ_DIR)/disk.o $(OBJ_DIR)/sort_manager.o $(OBJ_DIR)/entry_sizes.o 
+
+KERNEL_OBJS = $(OBJ_DIR)/cuda_kernel.o $(OBJ_DIR)/chacha8.o 
 
 ##########################################################
 
 ## Compile ##
 
 # Link c++ and CUDA compiled object files to target executable:
-$(EXE) : $(OBJS)
-	$(CC) $(CC_FLAGS) $(OBJS) -o $@ $(CUDA_LINK_LIBS) 
+$(EXE) : $(OBJS) $(KERNEL_OBJS)
+	$(CC) $(CC_FLAGS) $(OBJS) $(KERNEL_OBJS) -o $@ $(CUDA_LINK_LIBS) $(CC_LIBS)
 
 # Compile main .cpp file to object files:
 $(OBJ_DIR)/%.o : %.cpp
-	$(CC) $(CC_FLAGS) -c $< -o $@
+	$(CC) $(CC_FLAGS) -c $< -o $@ $(CC_LIBS)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 # Compile C++ source files to object files:
-$(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp include/%.h
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 # Compile CUDA source files to object files:
@@ -86,7 +89,7 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cu $(INC_DIR)/%.cuh
 
 # Clean objects in object directory.
 clean:
-	$(RM) bin/* *.o $(EXE)
+	$(RM) bin/* *.o *.tmp $(EXE)
 
 
 
