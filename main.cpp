@@ -124,8 +124,9 @@ int main(int argc, char *argv[]) {
     std::cout << "Result: " << std::endl;
     for (i = 0 ; i < block_size; i++)
     {
-        std::cout << c[i] << std::endl;
+        std::cout << c[i] << ", ";
     }
+    std:cout << std::endl;
 
 #else
 

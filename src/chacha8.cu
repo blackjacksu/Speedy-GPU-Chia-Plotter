@@ -179,13 +179,16 @@ void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blo
     // std::cout << "Size of uint32_t:" << sizeof(uint32_t) << std::endl;
     // std::cout << "Size of * uint32_t:" << sizeof(_n_blocks) << std::endl;
     // std::cout << "Size of struct chacha8_ctx:" << sizeof(struct chacha8_ctx) << std::endl;
-    std::cout << "x[0].input[5]: " << h_x[0].input[5] << std::endl;
-    std::cout << "x[1].input[5]: " << h_x[1].input[5] << std::endl;
-    std::cout << "x[2].input[5]: " << h_x[2].input[5] << std::endl;
+    std::cout << "h_x->input[5]: " << h_x->input[5] << std::endl;
+    std::cout << "h_x->input[6]: " << h_x->input[6] << std::endl;
+    std::cout << "h_x->input[7]: " << h_x->input[7] << std::endl;
     std::cout << "_pos[0]: " << h_pos[0] << std::endl;
     std::cout << "_pos[1]: " << h_pos[1] << std::endl;
-    std::cout << "_n_blocks[1]: " << h_n_blocks[1] << std::endl;
-    std::cout << "_n_blocks[2]: " << h_n_blocks[2] << std::endl;
+    std::cout << "h_c_start[1]: " << h_c_start[1] << std::endl;
+    std::cout << "h_c_start[2]: " << h_c_start[2] << std::endl;
+    std::cout << "h_c_size: " << h_c_size << std::endl;
+    std::cout << "h_array_size: " << h_array_size << std::endl;
+    
     if (h_array_size > MAX_ARRAY_SIZE)
     {
         std::cout << "Array size out of bound" << std::endl;
@@ -244,28 +247,28 @@ void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blo
     error = cudaMemcpy(d_pos, h_pos, h_array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
-        std::cout << "cudaMemcpy fail at pos error: " << error << std::endl; 
+        std::cout << "[H->D]cudaMemcpy fail at pos error: " << error << std::endl; 
         return;
     }
 
     error = cudaMemcpy(d_n_blocks, h_n_blocks, h_array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
-        std::cout << "cudaMemcpy fail at n_blocks error: " << error << std::endl; 
+        std::cout << "[H->D]cudaMemcpy fail at n_blocks error: " << error << std::endl; 
         return;
     }
 
     error = cudaMemcpy(d_x, h_x, sizeof(struct chacha8_ctx), cudaMemcpyHostToDevice);
     if (error)
     {
-        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+        std::cout << "[H->D]cudaMemcpy fail at x error: " << error << std::endl; 
         return;
     }
     
     error = cudaMemcpy(d_c_start, h_c_start, h_array_size * sizeof(uint8_t), cudaMemcpyHostToDevice);
     if (error)
     {
-        std::cout << "cudaMemcpy fail at x error: " << error << std::endl; 
+        std::cout << "[H->D]cudaMemcpy fail at x error: " << error << std::endl; 
         return;
     }
 
@@ -287,7 +290,7 @@ void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blo
     error = cudaMemcpy(h_c, d_c, h_c_size * sizeof(uint8_t), cudaMemcpyDeviceToHost);
     if (error)
     {
-        std::cout << "cudaMemcpy fail at host c error: " << error << std::endl; 
+        std::cout << "[H<-D]cudaMemcpy fail at host c error: " << error << std::endl; 
         return;
     }
 
