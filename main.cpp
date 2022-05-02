@@ -105,19 +105,21 @@ int main(int argc, char *argv[]) {
     struct chacha8_ctx x[1];
     uint64_t pos[4];
     uint64_t n_blocks[4];
-    uint8_t *c;
-    uint8_t c_start[4];
+    uint8_t c[256];
+    uint64_t c_start[4];
 
     uint8_t i;
 
-    uint8_t block_size = 0;
+    uint64_t block_size = 0;
     init_data(x, pos, n_blocks);
     for (i = 0 ; i < 4 ; i++)
     {   
         c_start[i] = block_size;
         block_size += n_blocks[i];
+        std::cout << "block_size" << block_size << ", n_blocks[i]:" << n_blocks[i] << std::endl;
     }
-
+    std::cout << "c_start[1]" << c_start[1] << std::endl;
+    std::cout << "block_size" << block_size << std::endl;
 
     get_chacha8_key(x, pos, n_blocks, c, c_start, block_size, size);
 
@@ -126,7 +128,7 @@ int main(int argc, char *argv[]) {
     {
         std::cout << c[i] << ", ";
     }
-    std:cout << std::endl;
+    std::cout << std::endl;
 
 #else
 

@@ -145,7 +145,7 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
 
 
         U32TO8_LITTLE(c + 0, x0); // c[0] = x0
-        U32TO8_LITTLE(c + 4, x1);
+        U32TO8_LITTLE(c + 4, x1); 
         U32TO8_LITTLE(c + 8, x2);
         U32TO8_LITTLE(c + 12, x3);
         U32TO8_LITTLE(c + 16, x4);
@@ -171,7 +171,7 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
 
 
 
-void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blocks, uint8_t *h_c, uint8_t *h_c_start, uint8_t h_c_size, int h_array_size)
+void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blocks, uint8_t *h_c, uint64_t *h_c_start, uint64_t h_c_size, int h_array_size)
 {
     // 
     // std::cout << "Size of uint64_t:" << sizeof(uint64_t) << std::endl;
@@ -229,14 +229,14 @@ void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blo
         return;
     }
     
-    error = cudaMalloc((void**) &d_c, h_c_size * sizeof(uint8_t));
+    error = cudaMalloc((void**) &d_c, h_c_size * sizeof(uint64_t));
     if (error)
     {
         std::cout << "cudaMalloc fail at c error: " << error << std::endl; 
         return;
     }
 
-    error = cudaMalloc((void**) &d_c_start, h_array_size * sizeof(uint8_t));
+    error = cudaMalloc((void**) &d_c_start, h_array_size * sizeof(uint64_t));
     if (error)
     {
         std::cout << "cudaMalloc fail at c_start error: " << error << std::endl; 
@@ -265,7 +265,7 @@ void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blo
         return;
     }
     
-    error = cudaMemcpy(d_c_start, h_c_start, h_array_size * sizeof(uint8_t), cudaMemcpyHostToDevice);
+    error = cudaMemcpy(d_c_start, h_c_start, h_array_size * sizeof(uint64_t), cudaMemcpyHostToDevice);
     if (error)
     {
         std::cout << "[H->D]cudaMemcpy fail at x error: " << error << std::endl; 
