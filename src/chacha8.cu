@@ -58,7 +58,7 @@ __global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint64_t *n_blocks, uint8_t *_c, uint8_t *c_start, int array_size)
 {
     int idx = threadIdx.x;
-    printf("[chacha8_get_keystream_cuda] i = %d\n", idx);
+    printf("[chacha8_get_keystream_cuda] i = %d, array size:%d\n", idx, array_size);
 
     if (idx >= array_size)
     {
@@ -188,7 +188,7 @@ void get_chacha8_key(struct chacha8_ctx *h_x, uint64_t *h_pos, uint64_t *h_n_blo
     std::cout << "h_c_start[2]: " << h_c_start[2] << std::endl;
     std::cout << "h_c_size: " << h_c_size << std::endl;
     std::cout << "h_array_size: " << h_array_size << std::endl;
-    
+
     if (h_array_size > MAX_ARRAY_SIZE)
     {
         std::cout << "Array size out of bound" << std::endl;

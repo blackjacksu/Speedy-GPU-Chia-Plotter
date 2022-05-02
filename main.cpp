@@ -111,13 +111,13 @@ int main(int argc, char *argv[]) {
     uint8_t i;
 
     uint8_t block_size = 0;
+    init_data(x, pos, n_blocks);
     for (i = 0 ; i < 4 ; i++)
     {   
         c_start[i] = block_size;
         block_size += n_blocks[i];
     }
 
-    init_data(x, pos, n_blocks);
 
     get_chacha8_key(x, pos, n_blocks, c, c_start, block_size, size);
 
