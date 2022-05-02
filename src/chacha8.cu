@@ -55,15 +55,21 @@ __global__ void Kernel_Print(int * block_dim, int * thread_id, int * grid_dim)
 
 
 // This is the GPU device code
-__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint32_t *n_blocks/*, uint8_t **c*/)
+__global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos, uint32_t *n_blocks/*, uint8_t **c*/, int array_size)
 {
     int idx = threadIdx.x;
     printf("[chacha8_get_keystream_cuda] i = %d\n", idx);
 
+    if (idx >= array_size)
+    {
+        // Out of bound
+        return;
+    }
+
     uint32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
     uint32_t j0, j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12, j13, j14, j15;
     int i;
-/*
+
     j0 = x[idx].input[0];
     j1 = x[idx].input[1];
     j2 = x[idx].input[2];
@@ -133,32 +139,32 @@ __global__ void chacha8_get_keystream_cuda( struct chacha8_ctx *x, uint64_t *pos
         if (!j12) {
             j13 = PLUSONE(j13);
             /* stopping at 2^70 bytes per nonce is user's responsibility */
-/*        }
+        }
 
 
-        U32TO8_LITTLE(c[idx] + 0, x0);
-        U32TO8_LITTLE(c[idx] + 4, x1);
-        U32TO8_LITTLE(c[idx] + 8, x2);
-        U32TO8_LITTLE(c[idx] + 12, x3);
-        U32TO8_LITTLE(c[idx] + 16, x4);
-        U32TO8_LITTLE(c[idx] + 20, x5);
-        U32TO8_LITTLE(c[idx] + 24, x6);
-        U32TO8_LITTLE(c[idx] + 28, x7);
-        U32TO8_LITTLE(c[idx] + 32, x8);
-        U32TO8_LITTLE(c[idx] + 36, x9);
-        U32TO8_LITTLE(c[idx] + 40, x10);
-        U32TO8_LITTLE(c[idx] + 44, x11);
-        U32TO8_LITTLE(c[idx] + 48, x12);
-        U32TO8_LITTLE(c[idx] + 52, x13);
-        U32TO8_LITTLE(c[idx] + 56, x14);
-        U32TO8_LITTLE(c[idx] + 60, x15);
+        // U32TO8_LITTLE(c[idx] + 0, x0);
+        // U32TO8_LITTLE(c[idx] + 4, x1);
+        // U32TO8_LITTLE(c[idx] + 8, x2);
+        // U32TO8_LITTLE(c[idx] + 12, x3);
+        // U32TO8_LITTLE(c[idx] + 16, x4);
+        // U32TO8_LITTLE(c[idx] + 20, x5);
+        // U32TO8_LITTLE(c[idx] + 24, x6);
+        // U32TO8_LITTLE(c[idx] + 28, x7);
+        // U32TO8_LITTLE(c[idx] + 32, x8);
+        // U32TO8_LITTLE(c[idx] + 36, x9);
+        // U32TO8_LITTLE(c[idx] + 40, x10);
+        // U32TO8_LITTLE(c[idx] + 44, x11);
+        // U32TO8_LITTLE(c[idx] + 48, x12);
+        // U32TO8_LITTLE(c[idx] + 52, x13);
+        // U32TO8_LITTLE(c[idx] + 56, x14);
+        // U32TO8_LITTLE(c[idx] + 60, x15);
 
-        c[idx] += 64;
+        // c[idx] += 64;
 
 
         // printf("c is clear");
     }
-*/
+
 }
 
 
@@ -188,8 +194,8 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
     uint64_t *d_pos;
     uint32_t *d_n_blocks;
     uint8_t **d_c;
-    int block_per_grid = 4;
-    int thread_per_block = 16;
+    int block_per_grid = 1;
+    int thread_per_block = h_array_size;
 
     // Has to handle error if memory allocation failed
     cudaError_t error;
@@ -247,7 +253,7 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
         return;
     }
 
-    chacha8_get_keystream_cuda<<<block_per_grid, thread_per_block>>>(d_x, d_pos, d_n_blocks/*, c*/);
+    chacha8_get_keystream_cuda<<<block_per_grid, thread_per_block>>>(d_x, d_pos, d_n_blocks/*, c*/, h_array_size);
 
     // std::cout << "Malloc and Memcpy done" << std::endl;
     // // std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
@@ -283,9 +289,6 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
 
 
     Kernel_Print<<<block_per_grid, thread_per_block>>>(block_dim, thread_id, grid_dim);
-    std::cout << "block_dim.x: " << block_dim[0] << ", block_dim.y: " << block_dim[1] << ", block_dim.z: " << block_dim[2] << std::endl;
-    std::cout << "thread_id.x: " << thread_id[0] << ", thread_id.y: " << thread_id[1] << ", thread_id.z: " << thread_id[2] << std::endl;
-    std::cout << "grid_dim.x: " << grid_dim[0] << ", grid_dim.y: " << grid_dim[1] << ", grid_dim.z: " << grid_dim[2] << std::endl;
 
     cudaMemcpy(bd, block_dim, 3 * sizeof(int), cudaMemcpyDeviceToHost);
 
