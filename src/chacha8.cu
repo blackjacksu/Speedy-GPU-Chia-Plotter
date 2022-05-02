@@ -188,7 +188,8 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
     uint64_t *d_pos;
     uint32_t *d_n_blocks;
     uint8_t **d_c;
-    int thread_block = h_array_size;
+    int block_per_grid = 4;
+    int thread_per_block = 16;
 
     // Has to handle error if memory allocation failed
     cudaError_t error;
@@ -246,7 +247,7 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
         return;
     }
 
-    chacha8_get_keystream_cuda<<<1, thread_block>>>(d_x, d_pos, d_n_blocks/*, c*/);
+    chacha8_get_keystream_cuda<<<block_per_grid, thread_per_block>>>(d_x, d_pos, d_n_blocks/*, c*/);
 
     // std::cout << "Malloc and Memcpy done" << std::endl;
     // // std::cout << "x: " << x[0].input[0] << x[0].input[1] << std::endl;
@@ -281,7 +282,7 @@ void get_chacha8_key(struct chacha8_ctx * h_x, uint64_t *h_pos, uint32_t *h_n_bl
     int gd[3];
 
 
-    Kernel_Print<<<1, thread_block>>>(block_dim, thread_id, grid_dim);
+    Kernel_Print<<<block_per_grid, thread_per_block>>>(block_dim, thread_id, grid_dim);
     std::cout << "block_dim.x: " << block_dim[0] << ", block_dim.y: " << block_dim[1] << ", block_dim.z: " << block_dim[2] << std::endl;
     std::cout << "thread_id.x: " << thread_id[0] << ", thread_id.y: " << thread_id[1] << ", thread_id.z: " << thread_id[2] << std::endl;
     std::cout << "grid_dim.x: " << grid_dim[0] << ", grid_dim.y: " << grid_dim[1] << ", grid_dim.z: " << grid_dim[2] << std::endl;
