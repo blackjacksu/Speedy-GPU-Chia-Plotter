@@ -24,10 +24,11 @@
 #include <mutex>
 
 
-#define Test_GPU 0
+#define Test_GPU 1
 
 #if Test_GPU
 #include "include/chacha8.cuh"
+#include <iostream>
 #include <array>
 #else
 // #include <unordered_map>
@@ -105,16 +106,26 @@ int main(int argc, char *argv[]) {
     uint64_t pos[4];
     uint64_t n_blocks[4];
     uint8_t *c;
+    uint8_t c_start[4];
+
+    uint8_t i;
 
     uint8_t block_size = 0;
-    for (int i = 0 ; i < 4 ; i++)
-    {
+    for (i = 0 ; i < 4 ; i++)
+    {   
+        c_start[i] = block_size;
         block_size += n_blocks[i];
     }
 
     init_data(x, pos, n_blocks);
 
-    get_chacha8_key(x, pos, n_blocks, c, block_size, size);
+    get_chacha8_key(x, pos, n_blocks, c, c_start, block_size, size);
+
+    std::cout << "Result: " << std::endl;
+    for (i = 0 ; i < block_size; i++)
+    {
+        std::cout << c[i] << std::endl;
+    }
 
 #else
 
