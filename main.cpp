@@ -40,7 +40,7 @@
 #include "include/sort_manager.h" 
 
 
-#define MAX_THREADS 4 // Change this for HW assignment
+#define MAX_THREADS 48 // Change this for HW assignment
 #define ARGC_NUM 5
 #define MAX_K 50
 #define MIN_K 0 // Should be 32, but we are testing
