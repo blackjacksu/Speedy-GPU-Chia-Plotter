@@ -1,0 +1,140 @@
+05022022_035436
+argc: 5
+k = 32
+gpu boost: 0
+Computing table 1
+Progress update: 0.01
+ID:022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e
+Num of thread:  
+Num of bucket: 64
+Enable GPU:0
+Thread Id: 6
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 7
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 8
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 9
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 10
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 11
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 12
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 13
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 14
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 15
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 16
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 17
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 18
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 19
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 20
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 21
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 22
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 23
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 24
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 25
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 26
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 27
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 5
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 28
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 29
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 30
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 31
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 4
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 3
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 2
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 1
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread Id: 0
+End: lp = 16777216
+Inc: +globals.num_threads 
+Thread 30 completed
+Thread 17 completed
+Thread 14 completed
+Thread 19 completed
+Thread 16 completed
+Thread 10 completed
+Thread 28 completed
+Thread 20 completed
+Thread 15 completed
+Thread 3 completed
+Thread 24 completed
+Thread 21 completed
+Thread 7 completed
+Thread 18 completed
+Thread 9 completed
+Thread 5 completed
+Thread 29 completed
+Thread 25 completed
+Thread 27 completed
+Thread 0 completed
+Thread 22 completed
+Thread 23 completed
+Thread 2 completed
+Thread 26 completed
+Thread 1 completed
+Thread 31 completed
+Thread 11 completed
+Thread 8 completed
+Thread 6 completed
+Thread 13 completed
+Thread 12 completed
+Thread 4 completed
+Flush to cache
+F1 complete, Time =  905.456 seconds. CPU (99.68%)

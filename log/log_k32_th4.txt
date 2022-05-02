@@ -1,0 +1,28 @@
+05022022_043704
+argc: 5
+k = 32
+gpu boost: 0
+Computing table 1
+Progress update: 0.01
+ID:022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e
+Num of thread: 
+Num of bucket: 64
+Enable GPU:0
+Thread Id: 3
+End: lp = 16777216
+Inc: +globals.num_threads
+Thread Id: 2
+End: lp = 16777216
+Inc: +globals.num_threads
+Thread Id: 1
+End: lp = 16777216
+Inc: +globals.num_threads
+Thread Id: 0
+End: lp = 16777216
+Inc: +globals.num_threads
+Thread 3 completed
+Thread 0 completed
+Thread 1 completed
+Thread 2 completed
+Flush to cache
+F1 complete, Time =  911.52 seconds. CPU (99.54%)

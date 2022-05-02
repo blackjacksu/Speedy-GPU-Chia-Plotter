@@ -1,0 +1,3 @@
+terminate called after throwing an instance of 'InsufficientMemoryException'
+  what():  Do not have enough memory. Need 6282.266667 MiB
+/var/spool/slurmd/job4271772/slurm_script: line 35: 241808 Aborted                 (core dumped) ./ChiaGPUPlotter 4 0 34 /scratch/user/willytwsu/plot/ > log_k34_%j.txt
