@@ -104,7 +104,7 @@ void F1Calculator::CalculateBuckets_Boost(uint64_t first_x[GPU_GROUP_SIZE], uint
         x_shift[j] = k_ - kExtraBits;
     }
 
-    get_chacha8_key(&this->enc_ctx_, start, num_blocks, buf_, buf_size, size);
+    get_chacha8_key(&this->enc_ctx_, start, num_blocks, buf_, buf_start_index, buf_size, size);
 
     for (j = 0 ; j < GPU_GROUP_SIZE; j++)
     {
