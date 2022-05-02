@@ -138,7 +138,14 @@ void init_data(struct chacha8_ctx * x, uint64_t *pos, uint32_t *n_blocks)
     x[3].input[15] = 45;
 
     pos[0] = 1;
+    pos[1] = 1;
+    pos[2] = 1;
+    pos[3] = 1;
 
+    n_blocks[0] = 1;
+    n_blocks[1] = 1;
+    n_blocks[2] = 2;
+    n_blocks[3] = 3;
 }
 
 int main(int argc, char *argv[]) {
