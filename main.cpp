@@ -24,7 +24,7 @@
 #include <mutex>
 
 
-#define Test_GPU 1
+#define Test_GPU 0
 
 #if Test_GPU
 #include "include/chacha8.cuh"
