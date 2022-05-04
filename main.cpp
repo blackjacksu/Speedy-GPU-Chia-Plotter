@@ -47,7 +47,7 @@
 #include "include/exceptions.h"
 // #include "include/pos_constants.h"
 #include "include/sort_manager.h" 
-
+#endif 
 
 #define MAX_THREADS 48 // Change this for HW assignment
 #define ARGC_NUM 5
