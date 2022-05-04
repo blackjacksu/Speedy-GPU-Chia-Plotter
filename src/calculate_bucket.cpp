@@ -67,37 +67,52 @@ F1Calculator::F1Calculator(uint8_t k, const uint8_t* orig_key, bool _gpu_boost)
 // n must not be more than 1 << kBatchSizes.
 void F1Calculator::CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res)
 {
-    uint64_t start = first_x * k_ / kF1BlockSizeBits;
+    uint64_t start = first_x * k_ / kF1BlockSizeBits; // kF1BlockSizeBits = 512
     // 'end' is one past the last keystream block number to be generated
     uint64_t end = cdiv((first_x + n) * k_, kF1BlockSizeBits);
     uint64_t num_blocks = end - start;
     uint32_t start_bit = first_x * k_ % kF1BlockSizeBits;
-    uint8_t x_shift = k_ - kExtraBits;
-    int size = 1;
-    uint64_t pos[1];
-    uint32_t n_block[1];
-    uint8_t **c;
-    struct chacha8_ctx x[1];
+    uint8_t x_shift = k_ - kExtraBits; // kExtraBits = 6
+
     assert(n <= (1U << kBatchSizes));
 
-    if (gpu_boost)
-    {
-        pos[0] = start;
-        n_block[0] = num_blocks;
-        memcpy(x, &this->enc_ctx_, sizeof(struct chacha8_ctx));
-
-        get_chacha8_key(x, pos, n_block, c, size);
-    }
-    else
-    {
-        chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
-    }
-
+    chacha8_get_keystream(&this->enc_ctx_, start, num_blocks, buf_);
 
     for (uint64_t x = first_x; x < first_x + n; x++) {
         uint64_t y = SliceInt64FromBytes(buf_, start_bit, k_);
         res[x - first_x] = (y << kExtraBits) | (x >> x_shift);
         start_bit += k_;
+    }
+}
+
+// GPU Interface
+void F1Calculator::CalculateBuckets_Boost(uint64_t first_x[GPU_GROUP_SIZE], uint64_t n[GPU_GROUP_SIZE], uint64_t *res)
+{
+    int j = 0;
+    int size = GPU_GROUP_SIZE;
+    uint64_t buf_size = 0;
+
+    for (j = 0 ; j < GPU_GROUP_SIZE; j++)
+    {
+        start[j] = first_x[j] * k_ / kF1BlockSizeBits;
+        // 'end' is one past the last keystream block number to be generated
+        end[j] = cdiv((first_x[j] + n[j]) * k_, kF1BlockSizeBits);
+        num_blocks[j] = end[j] - start[j];
+        buf_start_index[j] = buf_size;
+        buf_size += num_blocks[j];
+        start_bit[j] = first_x[j] * k_ % kF1BlockSizeBits;
+        x_shift[j] = k_ - kExtraBits;
+    }
+
+    get_chacha8_key(&this->enc_ctx_, start, num_blocks, buf_, buf_start_index, buf_size, size);
+
+    for (j = 0 ; j < GPU_GROUP_SIZE; j++)
+    {
+        for (uint64_t x = first_x[j]; x < first_x[j] + n[j]; x++) {
+            uint64_t y = SliceInt64FromBytes(&buf_[buf_start_index[j]], start_bit[j], k_);
+            res[x - first_x[j]] = (y << kExtraBits) | (x >> x_shift[j]);
+            start_bit[j] += k_;
+        }
     }
 }
 

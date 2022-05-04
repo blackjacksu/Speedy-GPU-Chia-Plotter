@@ -30,7 +30,7 @@
 #include "chacha8.cuh"
 #include "pos_constants.h"
 #include "util.h"
-
+#define GPU_GROUP_SIZE 4
 
 // ChaCha8 block size
 const uint16_t kF1BlockSizeBits = 512;
@@ -68,6 +68,8 @@ public:
     // n must not be more than 1 << kBatchSizes.
     void CalculateBuckets(uint64_t first_x, uint64_t n, uint64_t *res);
 
+    void CalculateBuckets_Boost(uint64_t first_x[GPU_GROUP_SIZE], uint64_t n[GPU_GROUP_SIZE], uint64_t *res);
+
     void say_hi();
 
     ~F1Calculator();
@@ -82,6 +84,13 @@ private:
     uint8_t *buf_{};
 
     bool gpu_boost;
+
+    uint64_t start[GPU_GROUP_SIZE];
+    uint64_t end[GPU_GROUP_SIZE];
+    uint64_t num_blocks[GPU_GROUP_SIZE];
+    uint64_t buf_start_index[GPU_GROUP_SIZE];
+    uint32_t start_bit[GPU_GROUP_SIZE];
+    uint8_t x_shift[GPU_GROUP_SIZE];
 };
 
 #endif

@@ -22,6 +22,15 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+
+
+#define Test_GPU 1
+
+#if Test_GPU
+#include "include/chacha8.cuh"
+#include <iostream>
+#include <array>
+#else
 // #include <unordered_map>
 // #include <unordered_set>
 // Include local CUDA header files.
@@ -49,11 +58,77 @@ using namespace std;
 
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time);
 void HexToBytes(const string &hex, uint8_t *result);
+void init_data(struct chacha8_ctx * x, uint64_t *pos, uint64_t *n_blocks);
+#if Test_GPU
 
+#else
 extern GlobalData globals;
+#endif
+void init_data(struct chacha8_ctx * x, uint64_t *pos, uint64_t *n_blocks)
+{
 
+    x[0].input[0] = 0;
+    x[0].input[1] = 1;
+    x[0].input[2] = 2;
+    x[0].input[3] = 3;
+    x[0].input[4] = 4;
+    x[0].input[5] = 5;
+    x[0].input[6] = 6;
+    x[0].input[7] = 7;
+    x[0].input[8] = 8;
+    x[0].input[9] = 9;
+    x[0].input[10] = 10;
+    x[0].input[11] = 11;
+    x[0].input[12] = 12;
+    x[0].input[13] = 13;
+    x[0].input[14] = 14;
+    x[0].input[15] = 15;
+
+    pos[0] = 1;
+    pos[1] = 1;
+    pos[2] = 1;
+    pos[3] = 1;
+
+    n_blocks[0] = 1;
+    n_blocks[1] = 1;
+    n_blocks[2] = 2;
+    n_blocks[3] = 3;
+}
 
 int main(int argc, char *argv[]) {
+
+#if Test_GPU
+    // Using GPU for chacha8
+    int size = 4;
+    struct chacha8_ctx x[1];
+    uint64_t pos[4];
+    uint64_t n_blocks[4];
+    uint8_t c[256];
+    uint64_t c_start[4];
+
+    uint8_t i;
+
+    uint64_t block_size = 0;
+    init_data(x, pos, n_blocks);
+    for (i = 0 ; i < 4 ; i++)
+    {   
+        c_start[i] = block_size;
+        block_size += n_blocks[i];
+        std::cout << "block_size" << block_size << ", n_blocks[i]:" << n_blocks[i] << std::endl;
+    }
+    std::cout << "c_start[1]" << c_start[1] << std::endl;
+    std::cout << "block_size" << block_size << std::endl;
+
+    get_chacha8_key(x, pos, n_blocks, c, c_start, block_size, size);
+
+    std::cout << "Result: " << std::endl;
+    for (i = 0 ; i < block_size; i++)
+    {
+        std::cout << c[i] << ", ";
+    }
+    std::cout << std::endl;
+
+#else
 
     // Execution format: ./ChiaGPUPloter <num of thread> <gpu boost mode> <k> <plot file path> 
     // For example: ./ChiaGPUPlotter 4 0 32 /scratch/user/willytwsu/plot/
@@ -154,11 +229,14 @@ int main(int argc, char *argv[]) {
 
 
     start_time.PrintElapsed("F1 complete, Time = ");
+#endif
 
     return 0;
 }
 
+#if Test_GPU
 
+#else
 int WritePlotFile(int num_threads_input, uint8_t const k, bool gpu_boost, std::string file_path, std::string start_time)
 {
     uint32_t num_stripes = 0;
@@ -301,3 +379,4 @@ void HexToBytes(const string &hex, uint8_t *result)
         result[i / 2] = byte;
     }
 }
+#endif
