@@ -12,11 +12,11 @@ Version:
 
 Requirement: 
 Environment: 
-- OS: Linux
+- OS: Linux \
 Compiler: 
-- GCC/G++
-- Makefile
-- NVCC (Nvidia CUDA Compiler)
+- GCC/G++ \
+- Makefile \
+- NVCC (Nvidia CUDA Compiler) \
     ** Installation guide: Either (a) or (b)
     >> Option (a): Follow the guide on this page: https://docs.nvidia.com/cuda/archive/9.2/cuda-installation-guide-mac-os-x/index.html#installation
 
